@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+ 	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<bean id="pageSaver" class="bit.crawl.pagesavers.PageStorePageSaver"
+		destroy-method="close">
+		<property name="taskName" value="bitHome-demo" />
+		<property name="baseDir" value="crawled-pages" />
+	</bean>
+
+	<bean id="crawler" class="bit.crawl.crawler.Crawler">
+		<property name="maxThreads" value="20" />
+		<property name="maxDepth" value="5" />
+		<property name="encoding" value="UTF-8" />
+		<property name="initialUrls">
+			<list>
+				<value>http://www.bit.edu.cn/</value>
+			</list>
+		</property>
+		<property name="filterRules">
+			<list>
+				<bean class="bit.crawl.crawler.FilterRule" p:pattern="http://www.bit.edu.cn/xww/zhxw/[0-9]+.htm"
+					p:action="STORE" />
+				<bean class="bit.crawl.crawler.FilterRule" p:pattern="http://www.bit.edu.cn/xww/xwtt/[0-9]+.htm"
+					p:action="STORE" />
+				<bean class="bit.crawl.crawler.FilterRule" p:pattern="http://www.bit.edu.cn/xww/.*"
+					p:action="FOLLOW" />
+				<bean class="bit.crawl.crawler.FilterRule" p:pattern="http://www.bit.edu.cn/"
+					p:action="STORE" />
+				<bean class="bit.crawl.crawler.FilterRule" p:pattern=".*"
+					p:action="AVOID" />
+			</list>
+		</property>
+
+		<property name="pageListeners">
+			<list>
+				<ref bean="pageSaver" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="extractor" class="bit.crawl.extractor.Extractor">
+
+		<property name="source">
+			<bean class="bit.crawl.extractor.source.PageStoreSource">
+				<!-- path is the second command-line argument of CommandlineExtractRunner -->
+				<!-- <property name="path" value="..."/> -->
+			</bean>
+		</property>
+
+		<property name="sink">
+			<bean class="bit.crawl.extractor.sink.SystemOutSink" />
+		</property>
+		
+		<!-- You can also use MySQL -->
+		<!-- <property name="sink"> -->
+		<!-- 	<bean class="bit.crawl.extractor.sink.SqlSink"> -->
+		<!-- 		<property name="dataSource" ref="dataSource" /> -->
+		<!-- 	</bean> -->
+		<!-- </property> -->
+		
+		<!-- datasource samples -->
+		<!--	<bean id="dataSource" class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">-->
+		<!--		<property name="serverName" value="127.0.0.1" />-->
+		<!--		<property name="user" value="root" />-->
+		<!--		<property name="password" value="xxxxxxx" />-->
+		<!--		<property name="databaseName" value="yuqingfenxi" />-->
+		<!--	</bean>-->
+
+		<property name="processorRules">
+			<list>
+				<bean class="bit.crawl.extractor.UrlProcessorRule">
+					<property name="urlPattern" value="http://www.bit.edu.cn/xww/zhxw/[0-9]+.htm" />
+					<property name="dbName" value="Zonghe Xinwen" />
+					<property name="processor">
+						<bean class="bit.crawl.extractor.processor.JhqlProcessor">
+							<property name="expression">
+								<value><![CDATA[
+									{
+										"someLiteral": "text:'Hello world!'",
+										"URL": "context:URL",
+										"title": "text:.//div[@class='title']",
+										"date": {
+											"_type": "date",
+											"value": ".//div[@class='bt_time']",
+											"grep": "\\((\\d+-\\d+-\\d+)\\)",
+											"dateFormat": "yyyy-MM-dd"	
+										},
+										"content": "text:.//div[@class='bt_content']"
+									}
+									]]>
+								</value>
+							</property>
+						</bean>
+					</property>
+				</bean>
+				<bean class="bit.crawl.extractor.UrlProcessorRule">
+					<property name="urlPattern" value="http://www.bit.edu.cn/xww/xwtt/[0-9]+.htm" />
+					<property name="dbName" value="Xinwen Toutiao" />
+					<property name="processor">
+						<bean class="bit.crawl.extractor.processor.RegexpProcessor">
+							<property name="patterns">
+								<map>
+									<entry key="htmltitle">
+										<value><![CDATA[<TITLE>(.*?)</TITLE>]]></value>
+									</entry>
+									<entry key="title">
+										<value><![CDATA[<DIV class=title>(.*?)</DIV>]]></value>
+									</entry>
+								</map>
+							</property>
+						</bean>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+
+</beans>
+

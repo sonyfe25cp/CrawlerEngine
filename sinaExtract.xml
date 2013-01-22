@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<appName>sina</appName>
+	<db>
+		<url property="mysql">jdbc:mysql://localhost:3306/lin</url>
+		<user>root</user>
+		<password>a62055974</password>
+		<charset>UTF-8</charset>
+		<table>
+			<name>sina</name>
+			<column>
+				<cname>title</cname>
+				<ctype>Varchar(100)</ctype>
+				<iskey>yes</iskey>
+			</column>
+			<column>
+				<cname>body</cname>
+				<ctype>text</ctype>
+				<iskey>no</iskey>
+			</column>
+			<column>
+				<cname>publictime</cname>
+				<ctype>Varchar(20)</ctype>
+				<iskey>no</iskey>
+			</column>
+			<column>
+				<cname>ref</cname>
+				<ctype>Varchar(50)</ctype>
+				<iskey>no</iskey>
+			</column>
+			<column>
+				<cname>reply</cname>
+				<ctype>Varchar(50)</ctype>
+				<iskey>no</iskey>
+			</column>
+		</table>
+	</db>
+	<urlPattern><![CDATA[http://news.sina.com.cn/s/(p/)?2010-\d+-\d+/\d+.shtml]]></urlPattern>
+	<rule>
+		<rule1>
+			<news>
+				<title>//*[@id='artibodyTitle']</title>
+				<ref>//*[@id='art_source']/a</ref>
+				<body>//*[@id='artibody']/p</body>
+				<!--<body>.//*[@id='page']/div[4]/div[1]/div[1]/div[1]</body>-->
+				<publictime>//*[@id='pub_date']</publictime>
+				<reply>.//*[@id='comment_t_show1']/a/span</reply>
+			</news>
+			<forum name="jisu">
+				<mainframe>.//*[@id]/tbody</mainframe>
+				<username>.//tr[1]/td[1]/div[1]/a/font</username>
+				<content>.//tr/td/div/div/div/table/tbody/tr/td</content>
+			</forum>
+		</rule1>
+	</rule>
+</root>

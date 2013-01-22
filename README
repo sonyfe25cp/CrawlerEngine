@@ -1,0 +1,218 @@
+========================
+CrawlerEngine - 简单的爬虫
+========================
+
+Version: 1.0.0
+Author: Kunshan Wang
+
+简单爬虫，用于爬网页，可独立运行，也可嵌入别的程序。
+
+所谓“爬”就是下载一个网页，然后下载这个网页的邻居，就是它里面的链接指向的网页，然后下
+载这些网页的邻居……
+
+基础
+-----------
+
+real-world-tasks目录里有例子。
+
+在build/dist/目录下执行如下命令( ---- add by chenjie)
+
+Windows用户执行这个命令：
+
+  bin\runcrawl.bat real-world-tasks\bitHome-demo.spring.xml
+
+Linux命令执行这个命令： 
+
+  bash bin/runcrawl.sh real-world-tasks/bitHome-demo.spring.xml
+
+执行以后，爬虫开始工作，结果保存在这里：
+  crawled-pages/bitHome-demo-xx-xx-xx-xx-xx-xx.pages.
+
+如果不想用单个文件保存（牺牲储存效率，但可以更方便的打开网页），可以改用
+bitHome-demo-filesystem.spring.xml 。
+
+要真正使用，看下面的帮助，写一个配置文件。
+
+命令行用法
+------------------
+
+运行脚本在bin/目录里。（源码中是/script目录）
+
+要爬取网页，写一个“配置文件”，这里是task-spec.spring.xml，然后执行：
+
+  (cd到CrawlerEngine的目录里)
+  bash bin/runcrawl.sh task-spec.spring.xml [这里可以放更多的文件...]
+
+后面跟多少个文件都可以。
+
+要从抓取的网页中抽取数据，需要分情况。
+
+如果你要导出到数据库，这样做：
+
+  bash bin/runextract.sh task-spec.spring.xml
+
+至于从哪里读取保存了的网页，可以在“配置文件”里直接指定，也可以在命令行指定：
+
+  bash bin/runextract.sh task-spec.spring.xml path/to/archive.pages
+
+目前只能从.pages文件和WARC文件中抽取。
+
+配置文件格式
+---------------
+
+（注意：老式配置文件格式仍然可用，但不推荐再用。新的格式应该使用Spring格式。扩展名
+应为.spring.xml。CrawlerEngine通过扩展名区别新旧格式。）
+
+配置文件就是个Spring的Bean定义文件（XML）。定义一个爬虫，和（或）一个抽取器。都是
+可选的。
+
+里面会涉及很多别的类。下面有介绍。
+
+id="crawler"的bean被当作爬虫装载，类是bit.crawl.crawler.Crawler。
+它的很多属性关系到爬虫的行为。包括：
+- maxThreads：最大线程数。
+- maxDepth：最大深度，根据crawlAction状态决定
+- encoding：页面的默认编码。爬虫会先试图自动检测代码。
+- initialUrls：一个列表，每一项是一个起始URL。从这些URL开始爬。
+- filterRules：一个列表。每项是一个过滤规则，bit.crawl.crawler.FilterRule类。
+    对于每个URL，爬虫会从第一条规则向后查，找到第一个“适用”的规则，
+    按其action处置这个URL。
+- pageListeners：一个列表。每个成员都要实现bit.crawl.crawler.IPageSaver接口。
+    当过滤规则action=STORE的页面被下载后，这个页面会交给这个列表中的每个对象保存。
+    目前有两个类实现了IPageSaver:
+    - bit.crawl.pagesavers.FileSystemPageSaver： 每个页面一个文件
+    - bit.crawl.pagesavers.PageStorePageSaver：存入单个文件。
+        ** 如果你要抽取网页内容，目前暂时必须使用这种格式。**
+
+id="extractor"的bean定义一个抽取器，它的类是bit.crawl.extractor.Extractor。
+必须定义它的source, sink和processorRules属性。
+- source：页面源，从哪里读页面。必须实现ExtractorSource接口的对象。
+  目前可用的页面源有：
+  - bit.crawl.extractor.source.PageStoreSource：.pages文件读取页面。
+  - bit.crawl.extractor.source.WarcSource：从WARC文件中读取页面。
+- sink：存放结果用。把抽取出来的数据保存在哪里。
+  目前可用的对象有：
+  - bit.crawl.extractor.sink.SystemOutSink：每个抽取结果打印到屏幕上。调试用。
+  - bit.crawl.extractor.sink.SqlSink：每个抽取结果存入MySQL数据库的表中。
+- processorRules：一个列表。每项是一个处理规则。实现
+  bit.crawl.extractor.ProcessorRule接口。
+  目前有两种实现：
+  - bit.crawl.extractor.UrlProcessorRule：用正则表达式匹配，匹配的才处理。
+  - bit.crawl.extractor.ForAllProcessorRule：不常用，对所有页面都处理。
+  但是不管哪种实现，都必须提供一个bit.crawl.extractor.ExtractorProcessor对象，
+  它真正抽取页面内容。
+
+一些类的用法
+-----------------
+
+** bit.crawl.crawler.FilterRule **
+爬虫的过滤规则。决定是否保存网页或者跟踪链接。
+每条过滤规则的属性是：
+- pattern：正则表达式。如果URL匹配这个正则表达式，则适用这条规则。
+- negative：是否反转。如果true，不匹配pattern的URL适用这条规则。
+- action：操作。值可以是：
+  - STORE：保存起来。
+  - FOLLOW：跟踪这个页的链接，但这个页不保存,不计算在distance中
+  - AVOID：既不跟踪也不保存。
+  - FOLLOW_STORE :跟踪这个页的链接，但这个页保存，计算在distance中
+
+** bit.crawl.pagesavers.FileSystemPageSaver **
+实现接口：bit.crawl.crawler.IPageSaver
+这个类把页面保存到磁盘上，用类似wget -r的目录结构。一个网页一个文件。
+你需要设置“baseDir”属性，决定网页存放到哪里。
+
+** bit.crawl.pagesavers.PageStorePageSaver **
+实现接口：bit.crawl.crawler.IPageSaver
+把网页存放到一个.pages文件中。注意：如果你要抽取网页内容，目前暂时必须使用这种格式。
+“baseDir”属性决定这个文件的位置，“taskName”属性决定文件的前缀。
+最后的文件会是：/path/to/base/dir/taskName-yy-mm-dd-hh-mm-ss.pages
+后面会打上时间戳。
+
+** bit.crawl.extractor.source.PageStoreSource **
+实现接口：bit.crawl.extractor.ExtractorSource
+从.pages文件读取页面。这是PageStorePageSaver保存的格式。
+如果指定一个文件，就设置“path”属性，指向该文件；
+如果指定多个文件，就设置“files”属性，传入一个列表，每项一个文件。
+
+** bit.crawl.extractor.source.WarcSource **
+实现接口：bit.crawl.extractor.ExtractorSource
+从WARC文件读取页面。
+用“path”属性指定WARC文件。
+
+** bit.crawl.extractor.sink.SystemOutSink **
+实现接口：bit.crawl.extractor.ExtractorSink
+把抽取结果打印到屏幕上。调试用。
+
+** bit.crawl.extractor.sink.SqlSink **
+实现接口：bit.crawl.extractor.ExtractorSink
+把抽取结果存入MySQL数据库。
+它需要“dataStore”属性指定一个javax.sql.DataSource数据源。请参考MySQL的文档以
+了解具体用法。一般这样定义：
+	<bean class="bit.crawl.extractor.sink.SqlSink">
+		<property name="dataSource">
+			<bean class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
+				<property name="serverName" value="127.0.0.1" />
+				<property name="user" value="wks" />
+				<property name="databaseName" value="search" />
+			</bean>
+		</property>
+	</bean>
+SqlSink要求抽取的结果是Map<String, Object>形。key是列名，value是值。这里会自动
+选择合适的数据类型。
+注意：ProcessorRule的dbName确定的是表名。数据库名在dataSource中指定。
+
+** bit.crawl.extractor.UrlProcessorRule **
+实现接口：bit.crawl.extractor.ProcessorRule
+类似爬虫过滤规则，抽取的时候，也要选用合适的抽取器。这个类通过URL找到适合抓取的页，
+然后调用嵌套的ExtractorProcessor对象抽取。
+需要指定以下属性；
+- urlPattern：URL模式。匹配这个正则表达式的用这个处理器抽取。
+- dbName：抽取结果应该存入哪个“数据库”。这里不一定指的是“数据库”的名字。
+          例如，SqlSink用dbName决定“表”名，而不是数据库名。
+          这使得如果既抓了新闻，又抓了论坛，可以放到不同表中。
+- processor：嵌套的ExractorProcessor对象。
+
+** bit.crawl.extractor.processor.JhqlProcessor **
+使用JHQL语言从页面中抓取内容。见http://github.com/wks/jhql查看语法。
+它的“stripScript”属性决定是否在处理之前去除<script>,<style>等标签。默认为true
+“expression”属性是一个JHQL表达式。
+常用的JHQL表达式类似这样：
+	{
+		"origin": "literal:sina",
+		"url": "context:URL",
+		"title": "text:.//*[@id='artibodyTitle']",
+		"date": {
+			"_type": "date",
+			"value": ".//*[@id='pub_date']",
+			"dateFormat": "yyyy年MM月dd日HH:mm"	
+		},
+		"content": "text:.//*[@id='artibody']",
+		"keywords": "text:.//meta[@name='keywords']/@content",
+		"description": "text:.//meta[@name='description']/@content"
+	}
+"text:/an/x/path"表示用后面的XPath获取目标中的文字
+"_type":"date"用于将匹配的文本进一步转换为日期，其中dateFormat是
+java.text.SimpleDateFormat规定的日期格式。
+
+.pages文件格式
+-------------------------------
+
+这种文件把多个网页存储到单个文件里，以提高效率。
+
+该文件是UTF-8编码的文本文件。包括多条“记录”。每条记录有多个“头”和一个“正文”。
+每个“头”的格式都是“域名:值”的格式。每个头之间以'\n'结尾（注意没有'\r'）。一个空行
+表示头的结束。（一个只含有'\n'的行。也可以理解：读到两个连续的'\n'，头就结束了。）
+接下来是正文。头中有一个特殊的域，域名是“Content-Length”，值是一个数字，表示正文
+的长度。单位是“字符”，不是“字节”，因为文件是UTF-8文本文件。
+
+正文结束，紧接着下一条记录。直到文件结束。
+
+你可以用bit.crawl.store.PageStoreReader读这种文件。不断调用load()直到返回null
+或者抛出异常。
+
+
+作者
+-------
+
+王坤山
+wks1986@gmail.com 

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rule>
+	<!--<title>//*[@id='artibodyTitle']</title>-->
+	<!--<ref>//*[@id='art_source']/a</ref>-->
+	<body>.//*[@id='yui_3_3_0_5_1323762859103131']/p[39]</body>
+	<!--<body>.//*[@id='page']/div[4]/div[1]/div[1]/div[1]</body> -->
+	<!--<publictime>//*[@id='pub_date']</publictime> -->
+	<!--<reply>.//*[@id='comment_t_show1']/a/span</reply> -->
+</rule>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rule>
+	<mainframe>.//*[@id]/tbody</mainframe>
+	<username>.//tr[1]/td[1]/div[1]/a/font</username>
+	<content>.//tr/td/div/div/div/table/tbody/tr/td</content>
+</rule>

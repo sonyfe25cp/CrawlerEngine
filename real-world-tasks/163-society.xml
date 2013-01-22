@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<crawl-task>
+	<task-name>163-society</task-name>
+	<base-dir>crawled-pages</base-dir>
+	<max-threads>20</max-threads>
+	<max-depth>5</max-depth>
+	<encoding>GB18030</encoding>
+	<initial-urls>
+		<url>http://news.163.com/shehui/</url>
+	</initial-urls>
+	<site-configs>
+	</site-configs>
+	<filter-rules>
+		<rule action="STORE">http://news.163.com/\d+/\d+/\d+/[0-9A-Za-z]+.html</rule>
+		<rule action="FOLLOW">http://news.163.com/special/[0-9A-Z]+/shehuibj(_\d+)?.html</rule>
+		<rule action="FOLLOW">http://news.163.com/special/[0-9A-Z]+/shehuiyf(_\d+)?.html</rule>
+		<rule action="FOLLOW">http://news.163.com/special/[0-9A-Z]+/qiwenqs(_\d+)?.html</rule>
+		<rule action="FOLLOW">http://news.163.com/special/[0-9A-Z]+/gantiandd(_\d+)?.html</rule>
+		<rule action="FOLLOW">http://news.163.com/shehui/</rule>
+		<rule action="AVOID">.*</rule>
+	</filter-rules>
+	<page-extractors>
+		<page-extractor>
+			<url-pattern>http://news.163.com/\d+/\d+/\d+/[0-9A-Za-z]+.html</url-pattern>
+			<rules>
+				<rule name="title"><![CDATA[<h1 id="h1title">(.+?)</h1>]]></rule>
+				<rule name="body" html-cleanup="true"><![CDATA[<div id="endText">(.+?)</div>]]></rule>
+				<rule name="publictime"><![CDATA[<span class="info">(\d+-\d+-\d+ \d+:\d+:\d+)]]></rule>
+				<rule name="keywords"><![CDATA[<meta name="keywords" content="(.+?)" />]]></rule>
+				<rule name="description"><![CDATA[<meta name="description" content="(.+?)" />]]></rule>
+			</rules>
+		</page-extractor>
+	</page-extractors>
+</crawl-task>

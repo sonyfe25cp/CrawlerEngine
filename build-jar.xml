@@ -1,0 +1,52 @@
+<project default="distribute">
+
+	<target name="clean">
+		<delete dir="build/classes" />
+		<delete dir="build/jar" />
+	</target>
+
+	<path id="master-classpath">
+		<fileset dir="lib">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<target name="compile">
+		<mkdir dir="build/classes" />
+		<javac srcdir="src" destdir="build/classes">
+			<classpath refid="master-classpath" />
+		</javac>
+		<copy file="src/log4j.properties" tofile="build/classes/log4j.properties" />
+	</target>
+
+	<target name="jar" depends="compile">
+		<mkdir dir="build/jar" />
+		<jar destfile="build/jar/CrawlerEngine.jar" basedir="build/classes">
+			<manifest>
+				<attribute name="Main-Class" value="bit.crawl.cmdline.CmdlineTaskRunner" />
+				<attribute name="Class-Path" value="lib/*" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="distribute" depends="jar">
+		<delete dir="build/dist" />
+		<mkdir dir="build/dist/crawlerengine" />
+		<mkdir dir="build/dist/crawlerengine/crawled-pages" />
+		<copy file="build/jar/CrawlerEngine.jar" todir="build/dist/crawlerengine" />
+		<copy todir="build/dist/crawlerengine/lib">
+			<fileset dir="lib" />
+		</copy>
+		<copy todir="build/dist/crawlerengine/real-world-tasks">
+			<fileset dir="real-world-tasks" />
+		</copy>
+		<copy todir="build/dist/crawlerengine/bin">
+			<fileset dir="script" />
+		</copy>
+		<copy todir="build/dist/crawlerengine">
+			<fileset file="README" />
+		</copy>
+		<tar destfile="build/dist/crawlerengine.tar.bz2" basedir="build/dist" includes="crawlerengine/**" compression="bzip2" />
+	</target>
+
+</project>

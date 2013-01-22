@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<crawl-task>
+	<task-name>sohu-society</task-name>
+	<base-dir>crawled-pages</base-dir>
+	<max-threads>20</max-threads>
+	<max-depth>5</max-depth>
+	<encoding>GB18030</encoding>
+	<initial-urls>
+		<url>http://news.sohu.com/shehuixinwen.shtml</url>
+	</initial-urls>
+	<site-configs>
+	</site-configs>
+	<filter-rules>
+		<rule action="STORE">http://news.sohu.com/\d+/n\d+.shtml</rule>
+		<rule action="FOLLOW">http://news.sohu.com/bagua(_\d+).shtml</rule>
+		<rule action="FOLLOW">http://news.sohu.com/shehuixinwen.shtml</rule>
+		<rule action="AVOID">.*</rule>
+	</filter-rules>
+	<page-extractors>
+		<page-extractor>
+			<url-pattern>http://news.sohu.com/\d+/n\d+.shtml</url-pattern>
+			<rules>
+				<rule name="title"><![CDATA[<h1>(.+?)</h1>]]></rule>
+				<rule name="body" html-cleanup="true"><![CDATA[<!-- 正文 st -->(.+?)<!-- 正文 end -->]]></rule>
+				<rule name="publictime"><![CDATA[<div class="r">(\d+年\d+月\d+日\d+:\d+)</div>]]></rule>
+				<rule name="keywords"><![CDATA[<meta name="keywords" content="(.+?)">]]></rule>
+				<rule name="description"><![CDATA[<meta name="description" content="(.+?)">]]></rule>
+			</rules>
+		</page-extractor>
+	</page-extractors>
+</crawl-task>

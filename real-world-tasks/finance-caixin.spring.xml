@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+ 	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<bean id="pageSaver" class="bit.crawl.pagesavers.PageStorePageSaver"
+		destroy-method="close">
+		<property name="taskName" value="finance-caixin" />
+		<property name="baseDir" value="crawled-pages" />
+	</bean>
+
+	<bean id="crawler" class="bit.crawl.crawler.Crawler">
+		<property name="maxThreads" value="20" />
+		<property name="maxDepth" value="5" />
+		<property name="encoding" value="UTF-8" />
+		<property name="initialUrls">
+			<list>
+                          <!-- 世界首页 -->
+                          <value>http://international.caixin.com/</value>
+                          <!-- 经济 -->
+                          <value>http://economy.caixin.com/</value>
+                          <!-- 金融 -->
+                          <value>http://finance.caixin.com/</value>
+                          <!-- 公司 -->
+                          <value>http://companies.caixin.com/</value>
+                          <!-- 政策 -->
+                          <value>http://policy.caixin.com/</value>
+			</list>
+		</property>
+		<property name="filterRules">
+			<list>
+                          <!-- chinatown -->
+                          <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://international.caixin.com/[0-9-]+/[0-9]+.html"
+					p:action="STORE" />
+                                      <!-- marketWatch -->
+                                      <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://international.caixin.com/(euro|us|analysis|stock|asian|china)_marketwatch/index[-1-9]+.html"
+					p:action="FOLLOW" />
+                                      
+                                      <!-- 世界 chinatown marketWatch-->
+                                      <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://international.caixin.com/(chinatown|marketwatch)/"
+					p:action="FOLLOW" />
+
+                                      <!-- 经济 -->
+                          <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://economy.caixin.com/[0-9-]+/[0-9]+.html"
+					p:action="STORE" />
+                                      <!-- 经济要闻 天天预测-->
+                                      <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://economy.caixin.com/(news|daily_forecast)/index[-1-9]+.html"
+					p:action="FOLLOW" />
+
+
+                          <!-- 金融 -->
+                          <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://finance.caixin.com/[0-9-]+/[0-9]+.html"
+					p:action="STORE" />
+                                      <!-- 金融分类 (focus,news,market)-->
+                                      <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://finance.caixin.com/(market|news|focus)/index[-1-9]+.html"
+					p:action="FOLLOW" />
+
+
+                          <!-- 公司 -->
+                          <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://companies.caixin.com/[0-9-]+/[0-9]+.html"
+					p:action="STORE" />
+                                      <!-- 公司分类 (新闻，商业模式，焦点)-->
+                                      <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://companies.caixin.com/(news|focus|business_mode)/index[-1-9]+.html"
+					p:action="FOLLOW" />
+
+                          <!-- 政策 -->
+                          <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://policy.caixin.com/[0-9-]+/[0-9]+.html"
+					p:action="STORE" />
+                                      <!-- 政策分类 (宏观，金融，产业，公共政策)-->
+                                      <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://policy.caixin.com/(macro|finance|property|pulic_policy)/index[-1-9]+.html"
+					p:action="FOLLOW" />
+
+
+                                      <!-- 总分类 -->
+                                      <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://(policy|companies|economy|finance|international).caixin.com/"
+					p:action="FOLLOW" />
+				<bean class="bit.crawl.crawler.FilterRule" p:pattern=".*"
+					p:action="AVOID" />
+			</list>
+		</property>
+
+		<property name="pageListeners">
+			<list>
+				<ref bean="pageSaver" />
+			</list>
+		</property>
+		<!-- new -->
+		<property name="crawlHistory">
+			<ref bean="crawlHistory" />
+		</property>
+	</bean>
+	<!-- mysql database -->
+	<bean id="dataSource" class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
+		<property name="serverName" value="127.0.0.1" />
+		<property name="user" value="root" />
+		<property name="password" value="123iop" />
+		<property name="databaseName" value="crawlhistory" />
+	</bean>
+	<!-- new -->
+	<bean id="crawlHistory" class="bit.crawl.crawler.CrawlHistory">
+		<property name="dataSource" ref="dataSource" />
+		<property name="tableName" value="financecaixin" />
+		<property name="bufferSize" value="100" />
+	</bean>
+</beans>
+

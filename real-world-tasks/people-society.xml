@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<crawl-task>
+	<task-name>people-society</task-name>
+	<base-dir>crawled-pages</base-dir>
+	<max-threads>20</max-threads>
+	<max-depth>5</max-depth>
+	<encoding>GB18030</encoding>
+	<initial-urls>
+		<url>http://society.people.com.cn/GB/index.html</url>
+	</initial-urls>
+	<site-configs>
+	</site-configs>
+	<filter-rules>
+		<rule action="STORE">http://society.people.com.cn/GB/(\d+/)*\d+.html</rule>
+		<rule action="FOLLOW">http://society.people.com.cn/GB/(\d+/)index.html</rule>
+		<rule action="FOLLOW">http://society.people.com.cn/GB/index.html</rule>
+		<rule action="AVOID">.*</rule>
+	</filter-rules>
+	<page-extractors>
+		<page-extractor>
+			<url-pattern>http://society.people.com.cn/GB/(\d+/)*\d+.html</url-pattern>
+			<rules>
+				<rule name="title" html-cleanup="true"><![CDATA[<h1><DIV id="p_title">(.+?)</div></h1>]]></rule>
+				<rule name="body" html-cleanup="true"><![CDATA[</SCRIPT>(.+?)<center>]]></rule>
+				<rule name="publictime" html-cleanup="true"><![CDATA[<span id="p_publishtime">(.+?)</span>]]></rule>
+				<rule name="keywords" html-cleanup="true"><![CDATA[<meta name="keywords" content="(.+?)" />]]></rule>
+				<rule name="description" html-cleanup="true"><![CDATA[<meta name="description" content="(.+?)" />]]></rule>
+			</rules>
+		</page-extractor>
+	</page-extractors>
+</crawl-task>
