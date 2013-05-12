@@ -1,12 +1,15 @@
 package bit.crawl.crawler;
 
 import java.util.*;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.concurrent.*;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+
+import edu.bit.dlde.extractor.BlockExtractor;
 
 import bit.crawl.crawler.impl.FetchJob;
 import bit.crawl.crawler.impl.ICrawlerForWorker;
@@ -65,6 +68,8 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 	 * Crawl history in database.
 	 */
 	private CrawlHistory crawlHistory = null;
+	
+	private List<String> topicWords = new ArrayList<String>();
 	
 	public CrawlHistory getCrawlHistory() {
 		return crawlHistory;
@@ -142,6 +147,14 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 
 	public void setPageListeners(List<IPageSaver> pageListeners) {
 		this.pageListeners = pageListeners;
+	}
+
+	public List<String> getTopicWords() {
+		return topicWords;
+	}
+
+	public void setTopicWords(List<String> topicWords) {
+		this.topicWords = topicWords;
 	}
 
 	/**
@@ -230,12 +243,15 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 		String url = pageInfo.getUrl();
 		if (getFilterAction(url) == CrawlAction.STORE) {
 			//if map not contains url save it
-			logger.info(String.format("Save page: %s", url));
-			for (IPageSaver pageListener : pageListeners) {
-				try {
-					pageListener.savePage(pageInfo);
-				} catch (Exception e) {
-					logger.error("PageListener error", e);
+			boolean topicFlag = topicFilter(pageInfo);
+			if(topicFlag){
+				logger.info(String.format("Save page: %s", url));
+				for (IPageSaver pageListener : pageListeners) {
+					try {
+						pageListener.savePage(pageInfo);
+					} catch (Exception e) {
+						logger.error("PageListener error", e);
+					}
 				}
 			}
 			if(crawlHistory!=null){
@@ -249,6 +265,21 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 				}
 			}
 		}
+	}
+	private boolean topicFilter(PageInfo pageInfo){
+		BlockExtractor be = new BlockExtractor();
+		String content = pageInfo.getContent();
+		boolean flag = false;
+		be.setReader(new StringReader(content));
+		be.extract();
+		content = be.getContent();
+		for(String topicWord : topicWords){
+			if(content.contains(topicWord)){
+				flag = true;
+				break;
+			}
+		}
+		return flag;
 	}
 
 	@Override

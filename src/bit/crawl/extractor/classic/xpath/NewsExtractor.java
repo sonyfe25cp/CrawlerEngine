@@ -129,10 +129,7 @@ public class NewsExtractor extends PageExtractor {
 							+ xPathExpression);
 				}
 			}
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (ParserConfigurationException e) {
+		}  catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JaxenException e) {

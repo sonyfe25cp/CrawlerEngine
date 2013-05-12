@@ -48,58 +48,54 @@ public class ForumExtractor extends PageExtractor {
 		HashMap<String, String> c2v = new HashMap<String, String>();
 
 		TagNode tagNode;
+		tagNode = cleaner.clean(file);
+
+		Object[] nodes;
+		String xPathExpression;
+		xPathExpression = _xPathExprs.get(0).getExpression();
+		Object[] frames = null;
+		TagNode frameNode;
 		try {
-			tagNode = cleaner.clean(file);
-
-			Object[] nodes;
-			String xPathExpression;
-			xPathExpression = _xPathExprs.get(0).getExpression();
-			Object[] frames = null;
-			TagNode frameNode;
-			try {
-				frames = tagNode.evaluateXPath(xPathExpression);
-			} catch (XPatherException e1) {
-				// TODO Auto-generated catch block
-				System.out.println(xPathExpression);
-				e1.printStackTrace();
-			}
-			// System.out.println(frames[0].toString());
-			for (Object frame : frames) {
-				// System.out.println("12819281937");
-				frameNode = (TagNode) frame;
-				for (int i = 1; i < _xPathExprs.size(); i++) {
-					xPathExpression = _xPathExprs.get(i).getExpression();
-					try {
-						nodes = frameNode.evaluateXPath(xPathExpression);
-
-						for (Object node : nodes) {
-							TagNode n = (TagNode) node;
-							String content = n.getText().toString();
-							if (_toTrim)
-								c2v.put(_xPathExprs.get(i).getName() + _id,
-										content.replaceAll("&nbsp;", " ")
-												.replace("\n", ""));
-							else
-								c2v.put(_xPathExprs.get(i).getName() + _id,
-										content);
-							logger.info("Extract result: "
-									+ _xPathExprs.get(i).getName() + ":"
-									+ content.replaceAll("&nbsp;", " ")
-									.replace("\n", ""));
-						}
-					} catch (NullPointerException e) {
-						System.out.println("ERROR: XPathExpression is "
-								+ xPathExpression);
-					} catch (XPatherException e) {
-						System.out.println("XPather ERROR: XPathExpression is "
-								+ xPathExpression);
-						e.printStackTrace();
-					}
-				}
-				_id++;
-			}
-		} catch (IOException e1) {
+			frames = tagNode.evaluateXPath(xPathExpression);
+		} catch (XPatherException e1) {
+			// TODO Auto-generated catch block
+			System.out.println(xPathExpression);
 			e1.printStackTrace();
+		}
+		// System.out.println(frames[0].toString());
+		for (Object frame : frames) {
+			// System.out.println("12819281937");
+			frameNode = (TagNode) frame;
+			for (int i = 1; i < _xPathExprs.size(); i++) {
+				xPathExpression = _xPathExprs.get(i).getExpression();
+				try {
+					nodes = frameNode.evaluateXPath(xPathExpression);
+
+					for (Object node : nodes) {
+						TagNode n = (TagNode) node;
+						String content = n.getText().toString();
+						if (_toTrim)
+							c2v.put(_xPathExprs.get(i).getName() + _id, content
+									.replaceAll("&nbsp;", " ")
+									.replace("\n", ""));
+						else
+							c2v.put(_xPathExprs.get(i).getName() + _id, content);
+						logger.info("Extract result: "
+								+ _xPathExprs.get(i).getName()
+								+ ":"
+								+ content.replaceAll("&nbsp;", " ").replace(
+										"\n", ""));
+					}
+				} catch (NullPointerException e) {
+					System.out.println("ERROR: XPathExpression is "
+							+ xPathExpression);
+				} catch (XPatherException e) {
+					System.out.println("XPather ERROR: XPathExpression is "
+							+ xPathExpression);
+					e.printStackTrace();
+				}
+			}
+			_id++;
 		}
 		return c2v;
 	}
