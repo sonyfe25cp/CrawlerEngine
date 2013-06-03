@@ -55,7 +55,6 @@ public class ForumExtractor extends PageExtractor {
 		HashMap<String, String> c2v = new HashMap<String, String>();
 
 		TagNode tagNode;
-		try {
 			tagNode = cleaner.clean(file);
 
 			Object[] nodes;
@@ -96,9 +95,6 @@ public class ForumExtractor extends PageExtractor {
 					}
 				}
 			}
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
 		return c2v;
 	}
 

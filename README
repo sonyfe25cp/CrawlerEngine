@@ -1,8 +1,8 @@
 ========================
 CrawlerEngine - 简单的爬虫
 ========================
-Branch: TopicCrawler
-Version： 1.0.0
+Branch: TopicBranch
+Version： 1.0.1
 Branch: 主题爬虫
 在配置文件的crawler bean增加
 <property name="topicWords">                                                

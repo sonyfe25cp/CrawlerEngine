@@ -14,11 +14,10 @@
 	<bean id="dataSource" class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
 		<property name="serverName" value="127.0.0.1" />
 		<property name="user" value="root" />
-		<property name="password" value="123iop" />
+		<property name="password" value="" />
 		<property name="databaseName" value="crawlhistory" />
 	</bean>
 
-	<!-- new -->
 	<bean id="crawlHistory" class="bit.crawl.crawler.CrawlHistory">
 		<property name="dataSource" ref="dataSource" />
 		<property name="tableName" value="newsgn_qq" />
@@ -31,35 +30,38 @@
 		<property name="encoding" value="UTF-8" />
 		<property name="initialUrls">
 			<list>
-                          <!-- 国内新闻 -->
-                          <value>http://news.qq.com/newsgn/gdxw/gedixinwen.htm</value>
-                          <value>http://news.qq.com/newsgn/gdxw/gedixinwen_2.htm</value>
+        <!-- 国内新闻 -->
+        <value>http://news.qq.com/newsgn/gdxw/gedixinwen.htm</value>
+        <value>http://news.qq.com/newsgn/gdxw/gedixinwen_2.htm</value>
 			</list>
 		</property>
 		<property name="filterRules">
 			<list>
-                          <!-- 新闻内容 -->
-                          <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/2012[0-9]+/[0-9]+.htm" p:action="STORE" />
-                     	  <!-- 翻页-->
-
-                     	  <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/newsgn/gdxw/gedixinwen.htm" p:action="FOLLOW" />
-
-                     	  <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/newsgn/gdxw/gedixinwen_[0-9]+.htm" p:action="FOLLOW" />
-
+        <!-- 新闻内容 -->
+        <!-- <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/2012[0-9]+/[0-9]+.htm" p:action="STORE" /> -->
+        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/20130512/[0-9]+.htm" p:action="STORE" />
+        <!-- 翻页-->
+        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/newsgn/gdxw/gedixinwen.htm" p:action="FOLLOW" />
+        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/newsgn/gdxw/gedixinwen_[0-9]+.htm" p:action="FOLLOW" />
 			  <bean class="bit.crawl.crawler.FilterRule" p:pattern=".*" p:action="AVOID" />
-
 			</list>
 		</property>
-
 		<property name="pageListeners">
 			<list>
 				<ref bean="pageSaver" />
 			</list>
 		</property>
-		<!-- new -->
 		<property name="crawlHistory">
 			<ref bean="crawlHistory" />
 		</property>
+    <property name="topicWords">
+      <list>
+        <value>和谐</value>
+        <value>新疆</value>
+        <value>文明</value>
+        <value>事故</value>
+      </list>
+    </property>
 	</bean>
 </beans>
 

@@ -15,6 +15,7 @@
 		<mkdir dir="build/classes" />
 		<javac srcdir="src" destdir="build/classes">
 			<classpath refid="master-classpath" />
+      <compilerarg line="-encoding UTF-8 "/>
 		</javac>
 		<copy file="src/log4j.properties" tofile="build/classes/log4j.properties" />
 	</target>
