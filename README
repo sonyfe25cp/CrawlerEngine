@@ -1,22 +1,24 @@
 ========================
 CrawlerEngine - 简单的爬虫
 ========================
-Branch: TopicBranch
 Version： 1.0.1
-Branch: 主题爬虫
-在配置文件的crawler bean增加
-<property name="topicWords">                                                
-	<list>                                                                    
-		<value>和谐</value>                                                     
-		<value>文明</value>                                                     
-		<value>事故</value>                                                     
-	</list>                                                                   
-</property>
-可以过滤只保存正文中带上述词的网页，正文提取技术采用block extractor，暂时不支持分词。
+Description: 增加主题爬虫功能，多个词之间是或的关系。
+使用方法：
+  在配置文件的crawler bean增加
+  <property name="topicWords">                                                
+  	<list>                                                                    
+  		<value>和谐</value>                                                     
+  		<value>文明</value>                                                     
+  		<value>事故</value>                                                     
+  	</list>                                                                   
+  </property>
+  可以过滤只保存正文中带上述词的网页，正文提取技术采用block extractor，暂时不支持分词。
+结果保存：
+  将符合上述要求的网页url保存在对应的数据库表之中。
+
 
 ========================
 
-Branch: Master
 Version: 1.0.0
 
 简单爬虫，用于爬网页，可独立运行，也可嵌入别的程序。
