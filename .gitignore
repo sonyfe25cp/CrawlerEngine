@@ -1,3 +1,4 @@
 /crawled-pages
 /build
 .svn
+bin/

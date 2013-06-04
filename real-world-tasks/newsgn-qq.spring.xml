@@ -6,22 +6,33 @@
 
 	<bean id="pageSaver" class="bit.crawl.pagesavers.PageStorePageSaver"
 		destroy-method="close">
-		<property name="taskName" value="newsgn_qq" />
+		<property name="taskName" value="newsgn_qq2" />
 		<property name="baseDir" value="crawled-pages" />
 	</bean>
 
 	<!-- mysql database -->
 	<bean id="dataSource" class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
-		<property name="serverName" value="127.0.0.1" />
+		<property name="serverName" value="10.1.0.127" />
 		<property name="user" value="root" />
-		<property name="password" value="" />
+		<property name="password" value="123iop" />
 		<property name="databaseName" value="crawlhistory" />
 	</bean>
 
 	<bean id="crawlHistory" class="bit.crawl.crawler.CrawlHistory">
 		<property name="dataSource" ref="dataSource" />
-		<property name="tableName" value="newsgn_qq" />
+		<property name="tableName" value="newsgn_qq_test" />
 		<property name="bufferSize" value="100" />
+	</bean>
+	
+	<bean id="topicCrawlHistory" class="bit.crawl.crawler.CrawlHistory">
+		<property name="dataSource" ref="dataSource" />
+		<property name="tableName" value="newsgn_qq_topic" />
+		<property name="bufferSize" value="10" />
+	</bean>
+	<!-- for pdf report -->
+	<bean id="pdfReporter" class="bit.crawl.reporter.PDFReporter">
+		<property name="title" value="DLDE网络监控系统"/>
+		<property name="site"  value="腾讯社会新闻网(news.qq.com)"/>
 	</bean>
 
 	<bean id="crawler" class="bit.crawl.crawler.Crawler">
@@ -30,20 +41,20 @@
 		<property name="encoding" value="UTF-8" />
 		<property name="initialUrls">
 			<list>
-        <!-- 国内新闻 -->
-        <value>http://news.qq.com/newsgn/gdxw/gedixinwen.htm</value>
-        <value>http://news.qq.com/newsgn/gdxw/gedixinwen_2.htm</value>
+		        <!-- 国内新闻 -->
+		        <value>http://news.qq.com/newsgn/gdxw/gedixinwen.htm</value>
+		        <value>http://news.qq.com/newsgn/gdxw/gedixinwen_2.htm</value>
 			</list>
 		</property>
 		<property name="filterRules">
 			<list>
-        <!-- 新闻内容 -->
-        <!-- <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/2012[0-9]+/[0-9]+.htm" p:action="STORE" /> -->
-        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/20130512/[0-9]+.htm" p:action="STORE" />
-        <!-- 翻页-->
-        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/newsgn/gdxw/gedixinwen.htm" p:action="FOLLOW" />
-        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/newsgn/gdxw/gedixinwen_[0-9]+.htm" p:action="FOLLOW" />
-			  <bean class="bit.crawl.crawler.FilterRule" p:pattern=".*" p:action="AVOID" />
+		        <!-- 新闻内容 -->
+		        <!-- <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/2012[0-9]+/[0-9]+.htm" p:action="STORE" /> -->
+		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/20130604/[0-9]+.htm" p:action="STORE" />
+		        <!-- 翻页-->
+		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/newsgn/gdxw/gedixinwen.htm" p:action="FOLLOW" />
+		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/newsgn/gdxw/gedixinwen_[0-9]+.htm" p:action="FOLLOW" />
+				<bean class="bit.crawl.crawler.FilterRule" p:pattern=".*" p:action="AVOID" />
 			</list>
 		</property>
 		<property name="pageListeners">
@@ -54,14 +65,20 @@
 		<property name="crawlHistory">
 			<ref bean="crawlHistory" />
 		</property>
-    <property name="topicWords">
-      <list>
-        <value>和谐</value>
-        <value>新疆</value>
-        <value>文明</value>
-        <value>事故</value>
-      </list>
-    </property>
+		<!-- add for topic specific crawler -->
+		<property name="topicCrawler" value="true"/>
+		<property name="topicCrawlHistory">
+			<ref bean="topicCrawlHistory" />
+		</property>
+	    <property name="topicWords">
+	      <list>
+	        <value>新疆</value>
+	        <value>事故</value>
+	      </list>
+	    </property>
+	    <property name="pdfReporter">
+	    	<ref bean="pdfReporter"/>
+	    </property>
 	</bean>
 </beans>
 

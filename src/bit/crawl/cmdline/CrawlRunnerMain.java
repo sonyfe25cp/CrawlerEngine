@@ -10,7 +10,7 @@ public class CrawlRunnerMain {
 	static Logger logger = new Logger();
 
 	public static void main(String[] args1) {
-		String taskFileName = "/home/coder/workspace/mavenSpace/CrawlerEngine/real-world-tasks/bitunion-forum-14-1.xml";
+		String taskFileName = "/home/coder/git/CrawlerEngine/real-world-tasks/newsgn-qq.spring.xml";
 
 		ApplicationContext context = new FileSystemXmlApplicationContext("file:" + taskFileName);
 		Crawler crawler = context.getBean("crawler", Crawler.class);

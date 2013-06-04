@@ -1,26 +1,32 @@
 package bit.crawl.crawler;
 
-import java.util.*;
 import java.io.StringReader;
 import java.nio.charset.Charset;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 
-import edu.bit.dlde.extractor.BlockExtractor;
-
 import bit.crawl.crawler.impl.FetchJob;
 import bit.crawl.crawler.impl.ICrawlerForWorker;
+import bit.crawl.reporter.PDFReporter;
 import bit.crawl.util.Logger;
 import bit.crawl.util.ZeroLatch;
+import edu.bit.dlde.extractor.BlockExtractor;
 
 /**
  * Crawl web pages from an initial URL, follow links and save user-specified
  * pages.
- * 
- * @author Kunshan Wang
  * 
  */
 public class Crawler implements Runnable, ICrawlerForWorker {
@@ -69,8 +75,40 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 	 */
 	private CrawlHistory crawlHistory = null;
 	
+	/**
+	 * Topic Crawl history in database.
+	 */
+	private CrawlHistory topicCrawlHistory = null;
+	private boolean topicCrawler = false;
 	private List<String> topicWords = new ArrayList<String>();
-	
+	private PDFReporter pdfReporter;
+	private static int total;
+	private static int topicSpecific;
+	private static HashMap<String,String> pairs = new HashMap<String,String>();
+	public PDFReporter getPdfReporter() {
+		return pdfReporter;
+	}
+
+	public void setPdfReporter(PDFReporter pdfReporter) {
+		this.pdfReporter = pdfReporter;
+	}
+
+	public boolean isTopicCrawler() {
+		return topicCrawler;
+	}
+
+	public void setTopicCrawler(boolean topicCrawler) {
+		this.topicCrawler = topicCrawler;
+	}
+
+	public CrawlHistory getTopicCrawlHistory() {
+		return topicCrawlHistory;
+	}
+
+	public void setTopicCrawlHistory(CrawlHistory topicCrawlHistory) {
+		this.topicCrawlHistory = topicCrawlHistory;
+	}
+
 	public CrawlHistory getCrawlHistory() {
 		return crawlHistory;
 	}
@@ -199,6 +237,9 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 			if(crawlHistory!=null){
 				crawlHistory.loadHistory();
 			}
+			if(topicCrawler == true && topicCrawlHistory!=null){
+				topicCrawlHistory.loadHistory();
+			}
 			executor = new ThreadPoolExecutor(getMaxThreads(), getMaxThreads(),
 					0, TimeUnit.SECONDS, workQueue);
 
@@ -208,6 +249,11 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 			if(crawlHistory!=null){
 				if(!crawlHistory.getBufferSet().isEmpty()){
 					crawlHistory.addHistory();
+				}
+			}
+			if(topicCrawler == true && topicCrawlHistory!=null){
+				if(!topicCrawlHistory.getBufferSet().isEmpty()){
+					topicCrawlHistory.addHistory();
 				}
 			}
 
@@ -223,7 +269,8 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 			}
 		}
 		logger.info("Crawling stopped.");
-
+		logger.info("Begin to generate the report.");
+		pdfReporter.report(topicWords,total,topicSpecific,pairs);
 	}
 
 	private CrawlAction getFilterAction(String url) {
@@ -241,10 +288,14 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 	@Override
 	public void reportPageFetched(PageInfo pageInfo) {
 		String url = pageInfo.getUrl();
+		total ++;
 		if (getFilterAction(url) == CrawlAction.STORE) {
-			//if map not contains url save it
-			boolean topicFlag = topicFilter(pageInfo);
-			if(topicFlag){
+			boolean saveFlag = true;
+			if(topicCrawler){//topic specifi crawler mode
+				 saveFlag = topicFilter(pageInfo);	
+			}
+			if(saveFlag){
+				topicSpecific++;
 				logger.info(String.format("Save page: %s", url));
 				for (IPageSaver pageListener : pageListeners) {
 					try {
@@ -254,6 +305,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 					}
 				}
 			}
+			//if map not contains url save it
 			if(crawlHistory!=null){
 				if(crawlHistory.getBufferSet().size() >= crawlHistory.getBufferSize()) {
 					synchronized(crawlHistory.getBufferSet()) {
@@ -262,6 +314,18 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 				}
 				else{
 					crawlHistory.addToBufferSet(url);
+				}
+			}
+			if(topicCrawler){//topic specifi crawler mode
+				if(topicCrawlHistory!=null){
+					if(topicCrawlHistory.getBufferSet().size() >= topicCrawlHistory.getBufferSize()) {
+						synchronized(topicCrawlHistory.getBufferSet()) {
+							topicCrawlHistory.addHistory();
+						}
+					}
+					else{
+						topicCrawlHistory.addToBufferSet(url);
+					}
 				}
 			}
 		}
@@ -273,9 +337,12 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 		be.setReader(new StringReader(content));
 		be.extract();
 		content = be.getContent();
+		String title = be.getTitle();
+		String url = pageInfo.getUrl();
 		for(String topicWord : topicWords){
 			if(content.contains(topicWord)){
 				flag = true;
+				pairs.put(url,title);
 				break;
 			}
 		}

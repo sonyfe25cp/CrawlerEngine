@@ -35,5 +35,8 @@
 	<classpathentry kind="lib" path="lib/jdom-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/page-extractor-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/wks_pages_reader-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/itext-pdfa-5.4.2.jar"/>
+	<classpathentry kind="lib" path="lib/itext-xtra-5.4.2.jar"/>
+	<classpathentry kind="lib" path="lib/itextpdf-5.4.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
