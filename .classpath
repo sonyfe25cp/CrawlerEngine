@@ -32,11 +32,12 @@
 	<classpathentry kind="lib" path="lib/org.springframework.expression-3.0.5.RELEASE.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/htmlcleaner-2.2.jar"/>
-	<classpathentry kind="lib" path="lib/jdom-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/page-extractor-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/jdom-1.1.jar" sourcepath="/home/omar/.m2/repository/org/jdom/jdom/1.1/jdom-1.1-sources.jar"/>
 	<classpathentry kind="lib" path="lib/wks_pages_reader-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/itext-pdfa-5.4.2.jar"/>
 	<classpathentry kind="lib" path="lib/itext-xtra-5.4.2.jar"/>
 	<classpathentry kind="lib" path="lib/itextpdf-5.4.2.jar"/>
+	<classpathentry kind="lib" path="lib/dlde-commons-1.0.jar" sourcepath="/dlde-commons/src"/>
+	<classpathentry kind="lib" path="lib/ant-1.7.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

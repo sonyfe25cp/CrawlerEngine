@@ -19,10 +19,10 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 
 import bit.crawl.crawler.impl.FetchJob;
 import bit.crawl.crawler.impl.ICrawlerForWorker;
+import bit.crawl.extractor.SimpleHtmlExtractor;
 import bit.crawl.reporter.PDFReporter;
 import bit.crawl.util.Logger;
 import bit.crawl.util.ZeroLatch;
-import edu.bit.dlde.extractor.BlockExtractor;
 
 /**
  * Crawl web pages from an initial URL, follow links and save user-specified
@@ -331,21 +331,27 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 		}
 	}
 	private boolean topicFilter(PageInfo pageInfo){
-		BlockExtractor be = new BlockExtractor();
 		String content = pageInfo.getContent();
-		boolean flag = false;
-		be.setReader(new StringReader(content));
-		be.extract();
-		content = be.getContent();
-		String title = be.getTitle();
+		boolean flag = true;
+//		BlockExtractor be = new BlockExtractor();
+//		be.setReader(new StringReader(content));
+//		be.extract();
+//		String title = be.getTitle();
+//		content = be.getContent();
+		SimpleHtmlExtractor she = new SimpleHtmlExtractor();
+		she.setReader(new StringReader(content));
+		she.extract();
+//		content = she.getContent();
+		String title = she.getTitle();
 		String url = pageInfo.getUrl();
 		for(String topicWord : topicWords){
-			if(content.contains(topicWord)){
-				flag = true;
-				pairs.put(url,title);
+			if(!title.contains(topicWord)){
+				flag = false;
 				break;
 			}
 		}
+		if(flag)
+			pairs.put(url,title);
 		return flag;
 	}
 

@@ -12,7 +12,7 @@
 
 	<!-- mysql database -->
 	<bean id="dataSource" class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
-		<property name="serverName" value="10.1.0.127" />
+		<property name="serverName" value="127.0.0.1" />
 		<property name="user" value="root" />
 		<property name="password" value="123iop" />
 		<property name="databaseName" value="crawlhistory" />
@@ -50,6 +50,7 @@
 			<list>
 		        <!-- 新闻内容 -->
 		        <!-- <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/2012[0-9]+/[0-9]+.htm" p:action="STORE" /> -->
+		        <!-- <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/20130604/[0-9]+.htm" p:action="STORE" /> -->
 		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/20130604/[0-9]+.htm" p:action="STORE" />
 		        <!-- 翻页-->
 		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/newsgn/gdxw/gedixinwen.htm" p:action="FOLLOW" />
@@ -72,8 +73,8 @@
 		</property>
 	    <property name="topicWords">
 	      <list>
-	        <value>新疆</value>
-	        <value>事故</value>
+	        <value>禽业公司</value>
+	        <value>火灾</value>
 	      </list>
 	    </property>
 	    <property name="pdfReporter">
