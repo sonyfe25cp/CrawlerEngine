@@ -1,0 +1,10 @@
+eclipse.preferences.version=1
+encoding//real-world-tasks/newsgn-qq-normal.spring.xml=UTF-8
+encoding//real-world-tasks/newsgn-qq.spring.xml=UTF-8
+encoding//src/bit/crawl/bloomfilter/DBPool.java=UTF-8
+encoding//src/bit/crawl/crawler/Crawler.java=UTF-8
+encoding//src/bit/crawl/crawler/impl/FetchJob.java=UTF-8
+encoding//src/bit/crawl/extractor/classic/xpath/SqlQueryGen.java=UTF-8
+encoding//src/bit/crawl/reporter/PDFReporter.java=UTF-8
+encoding//src/bit/crawl/test/PDFReporterTest.java=UTF-8
+encoding//src/bit/crawl/test/TestTopicCrawler.java=UTF-8

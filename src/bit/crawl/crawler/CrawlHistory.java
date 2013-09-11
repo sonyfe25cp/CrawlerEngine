@@ -85,6 +85,28 @@ public class CrawlHistory {
 	}
 	
 	/**
+	 * import urls from mysql,then add to bloomFilter and serialize
+	 */
+	public ResultSet initBloomFilter()
+	{	
+		ResultSet rs = null;
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.createStatement();
+			
+			if(checkTableExistence() == false)
+				createTable();
+			else
+			{
+				rs = stmt.executeQuery("SELECT url FROM " + tableName);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return rs;
+	}
+	
+	/**
 	 * load crawling history from database to the historySet
 	 */
 	public void loadHistory()

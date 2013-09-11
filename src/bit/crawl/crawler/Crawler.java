@@ -1,5 +1,11 @@
 package bit.crawl.crawler;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -17,6 +23,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 
+import bit.crawl.bloomfilter.BloomFilter;
 import bit.crawl.crawler.impl.FetchJob;
 import bit.crawl.crawler.impl.ICrawlerForWorker;
 import bit.crawl.extractor.SimpleHtmlExtractor;
@@ -36,7 +43,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 	private HttpClient httpClient = new DefaultHttpClient(connManager);
 
 	/**
-	 * The max number of theads to use.
+	 * The max number of threads to use.
 	 */
 	private int maxThreads;
 
@@ -74,17 +81,24 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 	 * Crawl history in database.
 	 */
 	private CrawlHistory crawlHistory = null;
-	
+
 	/**
 	 * Topic Crawl history in database.
 	 */
 	private CrawlHistory topicCrawlHistory = null;
+
+	/**
+	 * BloomFilter to check whether the element been added,if not add it
+	 */
+	private BloomFilter<String> bloomFilter = null;
+
 	private boolean topicCrawler = false;
 	private List<String> topicWords = new ArrayList<String>();
 	private PDFReporter pdfReporter;
 	private static int total;
 	private static int topicSpecific;
-	private static HashMap<String,String> pairs = new HashMap<String,String>();
+	private static HashMap<String, String> pairs = new HashMap<String, String>();
+
 	public PDFReporter getPdfReporter() {
 		return pdfReporter;
 	}
@@ -115,6 +129,14 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 
 	public void setCrawlHistory(CrawlHistory crawlHistory) {
 		this.crawlHistory = crawlHistory;
+	}
+
+	public BloomFilter<String> getBloomFilter() {
+		return bloomFilter;
+	}
+
+	public void setBloomFilter(BloomFilter<String> bloomFilter) {
+		this.bloomFilter = bloomFilter;
 	}
 
 	public HttpClient getHttpClient() {
@@ -206,7 +228,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 	/* Private fields */
 
 	private BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>();
-	private Set<String> dispatched = new HashSet<String>();//抓取过的url
+	private Set<String> dispatched = new HashSet<String>();// 抓取过的url
 
 	private ThreadPoolExecutor executor = null;
 	private ZeroLatch latch = new ZeroLatch(0);
@@ -234,25 +256,49 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 			logger.info("Start crawling.");
 			logger.info("Default charset:" + getEncoding());
 			logger.info("Loading crawl history");
-			if(crawlHistory!=null){
-				crawlHistory.loadHistory();
+
+			// 加载BloomFilter
+			FileInputStream fis = null;
+			try {
+				fis = new FileInputStream("bloomFilter.bf");
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
 			}
-			if(topicCrawler == true && topicCrawlHistory!=null){
+
+			ObjectInputStream ois = null;
+			try {
+				ois = new ObjectInputStream(fis);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			try {
+				bloomFilter = (BloomFilter<String>) ois.readObject();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+
+			// if(crawlHistory!=null){
+			// crawlHistory.loadHistory();
+			// }
+			if (topicCrawler == true && topicCrawlHistory != null) {
 				topicCrawlHistory.loadHistory();
 			}
 			executor = new ThreadPoolExecutor(getMaxThreads(), getMaxThreads(),
 					0, TimeUnit.SECONDS, workQueue);
 
 			reportLinks(getInitialUrls(), 0);
-			
+
 			latch.await();
-			if(crawlHistory!=null){
-				if(!crawlHistory.getBufferSet().isEmpty()){
+			if (crawlHistory != null) {
+				if (!crawlHistory.getBufferSet().isEmpty()) {
 					crawlHistory.addHistory();
 				}
 			}
-			if(topicCrawler == true && topicCrawlHistory!=null){
-				if(!topicCrawlHistory.getBufferSet().isEmpty()){
+			if (topicCrawler == true && topicCrawlHistory != null) {
+				if (!topicCrawlHistory.getBufferSet().isEmpty()) {
 					topicCrawlHistory.addHistory();
 				}
 			}
@@ -268,33 +314,56 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 				executor.shutdownNow();
 			}
 		}
+		
+		//序列化输出bloomFilter
+		FileOutputStream fos = null;
+		try {
+			fos = new FileOutputStream("bloomFilter.bf");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		ObjectOutputStream oos = null;
+		try {
+			oos = new ObjectOutputStream(fos);
+			oos.writeObject(bloomFilter);
+			oos.close();
+			logger.info("bloomFilter serialize successfully!!!");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		
+		
+		
 		logger.info("Crawling stopped.");
 		logger.info("Begin to generate the report.");
-		pdfReporter.report(topicWords,total,topicSpecific,pairs);
+		pdfReporter.report(topicWords, total, topicSpecific, pairs);
+		logger.info("Generete the report successfully.");
 	}
 
 	private CrawlAction getFilterAction(String url) {
-		CrawlAction action=null;
+		CrawlAction action = null;
 		for (FilterRule fr : getFilterRules()) {
 			action = fr.judge(url);
 			if (action != null) {
 				return action;
 			}
 		}
-		logger.info("url:"+url+" --- action:"+(action==null?"Follow":action));
+		logger.info("url:" + url + " --- action:"
+				+ (action == null ? "Follow" : action));
 		return CrawlAction.FOLLOW;
 	}
 
 	@Override
 	public void reportPageFetched(PageInfo pageInfo) {
 		String url = pageInfo.getUrl();
-		total ++;
+		total++;
 		if (getFilterAction(url) == CrawlAction.STORE) {
 			boolean saveFlag = true;
-			if(topicCrawler){//topic specifi crawler mode
-				 saveFlag = topicFilter(pageInfo);	
+			if (topicCrawler) {// topic specifi crawler mode
+				saveFlag = topicFilter(pageInfo);
 			}
-			if(saveFlag){
+			if (saveFlag) {
 				topicSpecific++;
 				logger.info(String.format("Save page: %s", url));
 				for (IPageSaver pageListener : pageListeners) {
@@ -305,53 +374,58 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 					}
 				}
 			}
-			//if map not contains url save it
-			if(crawlHistory!=null){
-				if(crawlHistory.getBufferSet().size() >= crawlHistory.getBufferSize()) {
-					synchronized(crawlHistory.getBufferSet()) {
+			// if map not contains url save it
+			if (crawlHistory != null) {
+				if (crawlHistory.getBufferSet().size() >= crawlHistory
+						.getBufferSize()) {
+					synchronized (crawlHistory.getBufferSet()) {
 						crawlHistory.addHistory();
 					}
-				}
-				else{
+				} else {
 					crawlHistory.addToBufferSet(url);
 				}
 			}
-			if(topicCrawler){//topic specifi crawler mode
-				if(topicCrawlHistory!=null){
-					if(topicCrawlHistory.getBufferSet().size() >= topicCrawlHistory.getBufferSize()) {
-						synchronized(topicCrawlHistory.getBufferSet()) {
+
+			// add url to BloomFilter
+			bloomFilter.add(url);
+
+			if (topicCrawler) {// topic specify crawler mode
+				if (topicCrawlHistory != null) {
+					if (topicCrawlHistory.getBufferSet().size() >= topicCrawlHistory
+							.getBufferSize()) {
+						synchronized (topicCrawlHistory.getBufferSet()) {
 							topicCrawlHistory.addHistory();
 						}
-					}
-					else{
+					} else {
 						topicCrawlHistory.addToBufferSet(url);
 					}
 				}
 			}
 		}
 	}
-	private boolean topicFilter(PageInfo pageInfo){
+
+	private boolean topicFilter(PageInfo pageInfo) {
 		String content = pageInfo.getContent();
 		boolean flag = true;
-//		BlockExtractor be = new BlockExtractor();
-//		be.setReader(new StringReader(content));
-//		be.extract();
-//		String title = be.getTitle();
-//		content = be.getContent();
+		// BlockExtractor be = new BlockExtractor();
+		// be.setReader(new StringReader(content));
+		// be.extract();
+		// String title = be.getTitle();
+		// content = be.getContent();
 		SimpleHtmlExtractor she = new SimpleHtmlExtractor();
 		she.setReader(new StringReader(content));
 		she.extract();
-//		content = she.getContent();
+		// content = she.getContent();
 		String title = she.getTitle();
 		String url = pageInfo.getUrl();
-		for(String topicWord : topicWords){
-			if(!title.contains(topicWord)){
+		for (String topicWord : topicWords) {
+			if (!title.contains(topicWord)) {
 				flag = false;
 				break;
 			}
 		}
-		if(flag)
-			pairs.put(url,title);
+		if (flag)
+			pairs.put(url, title);
 		return flag;
 	}
 
@@ -364,14 +438,21 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 
 		synchronized (dispatched) {
 			for (String link : urls) {
-				if (dispatched.contains(link)) {//已抓过??
+				if (dispatched.contains(link)) {// 已抓过??
 					logger.debug(String.format("Discard dispatched link %s",
 							link));
 					continue;
 				}
-				if(crawlHistory!=null){
-					if(crawlHistory.getHistorySet().contains(link)) {
-						logger.info("some day already crawled this link:"+link);
+				// if(crawlHistory!=null){
+				// if(crawlHistory.getHistorySet().contains(link)) {
+				// logger.info("some day already crawled this link:"+link);
+				// continue;
+				// }
+				// }
+
+				if (bloomFilter != null) {
+					if (bloomFilter.contains(link)) {
+						logger.info("Someday already crawled this link:" + link);
 						continue;
 					}
 				}

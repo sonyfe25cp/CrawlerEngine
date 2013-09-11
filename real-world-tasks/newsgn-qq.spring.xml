@@ -14,13 +14,19 @@
 	<bean id="dataSource" class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
 		<property name="serverName" value="127.0.0.1" />
 		<property name="user" value="root" />
-		<property name="password" value="123iop" />
+		<property name="password" value="123123" />
 		<property name="databaseName" value="crawlhistory" />
 	</bean>
 
 	<bean id="crawlHistory" class="bit.crawl.crawler.CrawlHistory">
 		<property name="dataSource" ref="dataSource" />
-		<property name="tableName" value="newsgn_qq_test" />
+		<property name="tableName" value="newsgn_qq" />
+		<property name="bufferSize" value="100" />
+	</bean>
+	
+	<bean id="initBloomFilter" class="bit.crawl.crawler.CrawlHistory">
+		<property name="dataSource" ref="dataSource" />
+		<property name="tableName" value="newsgn_qq" />
 		<property name="bufferSize" value="100" />
 	</bean>
 	
@@ -51,7 +57,7 @@
 		        <!-- 新闻内容 -->
 		        <!-- <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/2012[0-9]+/[0-9]+.htm" p:action="STORE" /> -->
 		        <!-- <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/20130604/[0-9]+.htm" p:action="STORE" /> -->
-		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/20130604/[0-9]+.htm" p:action="STORE" />
+		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/20130909/[0-9]+.htm" p:action="STORE" />
 		        <!-- 翻页-->
 		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/newsgn/gdxw/gedixinwen.htm" p:action="FOLLOW" />
 		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/newsgn/gdxw/gedixinwen_[0-9]+.htm" p:action="FOLLOW" />
