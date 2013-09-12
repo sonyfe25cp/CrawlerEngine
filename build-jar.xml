@@ -18,6 +18,7 @@
       <compilerarg line="-encoding UTF-8 "/>
 		</javac>
 		<copy file="src/log4j.properties" tofile="build/classes/log4j.properties" />
+		<copy file="src/msyh.ttf" tofile="build/classes/msyh.ttf" />
 	</target>
 
 	<target name="jar" depends="compile">

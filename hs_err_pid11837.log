@@ -1,0 +1,326 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0x00007f7eb7032ca3, pid=11837, tid=140179669989120
+#
+# JRE version: 6.0_21-b06
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (17.0-b16 mixed mode linux-amd64 )
+# Problematic frame:
+# V  [libjvm.so+0x71aca3]
+#
+# If you would like to submit a bug report, please visit:
+#   http://java.sun.com/webapps/bugreport/crash.jsp
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00007f7eb00a4800):  JavaThread "JDWP Transport Listener: dt_socket" daemon [_thread_in_vm, id=11853, stack(0x00007f7e1f5f3000,0x00007f7e1f6f4000)]
+
+siginfo:si_signo=SIGSEGV: si_errno=0, si_code=1 (SEGV_MAPERR), si_addr=0x0000000000000018
+
+Registers:
+RAX=0x0000000000000018, RBX=0x0000000000000004, RCX=0x0000000000000000, RDX=0x0000000000000000
+RSP=0x00007f7e1f6f2820, RBP=0x00007f7e1f6f2820, RSI=0x0000000000000004, RDI=0x0000000000000018
+R8 =0x0000000000000000, R9 =0x0000000000000000, R10=0x000000000000001c, R11=0x0000000000000018
+R12=0x0000000000000018, R13=0x00007f7eb00a5360, R14=0x0000000000000000, R15=0x00007f7e1f6f2880
+RIP=0x00007f7eb7032ca3, EFL=0x0000000000010297, CSGSFS=0x0000000000000033, ERR=0x0000000000000004
+  TRAPNO=0x000000000000000e
+
+Top of Stack: (sp=0x00007f7e1f6f2820)
+0x00007f7e1f6f2820:   00007f7e1f6f2840 00007f7eb7032cf1
+0x00007f7e1f6f2830:   00007f7eb00a5738 00007f7e08006af0
+0x00007f7e1f6f2840:   00007f7e1f6f2850 00007f7eb6d00d2c
+0x00007f7e1f6f2850:   00007f7e1f6f28f0 00007f7eb6d2da89
+0x00007f7e1f6f2860:   00007f7eb00a4730 00007f7eb00a5350
+0x00007f7e1f6f2870:   00007f7eb00a5360 00007f7eb00a5738
+0x00007f7e1f6f2880:   00007f7eb00a4800 0000000000000000
+0x00007f7e1f6f2890:   00007f7eb00a4800 0000000000000001
+0x00007f7e1f6f28a0:   00007f7eb00a4800 0000000000000001
+0x00007f7e1f6f28b0:   00007f7eb00a4800 00007f7eb5c9aadf
+0x00007f7e1f6f28c0:   00007f7e08006af0 00007f7e1f6f2ae0
+0x00007f7e1f6f28d0:   00007f7e1f6f2950 00007f7e08006af0
+0x00007f7e1f6f28e0:   00007f7eb5da70f0 0000000000000007
+0x00007f7e1f6f28f0:   00007f7eb00a49c8 00007f7eb5c7a94d
+0x00007f7e1f6f2900:   00007f7e1f6f2950 00007f7e1f6f2b10
+0x00007f7e1f6f2910:   00007f7e1f6f2ae0 00007f7eb5da70f0
+0x00007f7e1f6f2920:   0000000000000001 00007f7eb5c828fb
+0x00007f7e1f6f2930:   000007eb00000013 00007f7e00010a00
+0x00007f7e1f6f2940:   00007f7e00001000 00007f7e1f6f2950
+0x00007f7e1f6f2950:   00007f7e1f6f29a0 00007f7e0000012c
+0x00007f7e1f6f2960:   00007f7e1f6f2968 00007f7e00000000
+0x00007f7e1f6f2970:   00007f7e1f6f29a0 0000000000000000
+0x00007f7e1f6f2980:   00007f0000000000 000007eb00000018
+0x00007f7e1f6f2990:   00007f7e0000ab80 00007f7e1f6f29a0
+0x00007f7e1f6f29a0:   0000005b01000000 0000002600000000
+0x00007f7e1f6f29b0:   7f00002000000000 000000b86800087e
+0x00007f7e1f6f29c0:   0000000f00000000 00000101003c0000
+0x00007f7e1f6f29d0:   0000200000000000 0000786900087e7f
+0x00007f7e1f6f29e0:   0000050000000000 000102003c000000
+0x00007f7e1f6f29f0:   0006000000000000 00285100087e7f00
+0x00007f7e1f6f2a00:   0004000000000000 0103003c00000000
+0x00007f7e1f6f2a10:   1800000000000000 405300087e7f0000 
+
+Instructions: (pc=0x00007f7eb7032ca3)
+0x00007f7eb7032c93:   55 45 31 c9 41 39 f0 48 89 e5 7d 1c 90 49 63 d1
+0x00007f7eb7032ca3:   0f b7 0c 57 8d 51 ff 66 83 fa 7e 77 10 41 ff c0 
+
+Stack: [0x00007f7e1f5f3000,0x00007f7e1f6f4000],  sp=0x00007f7e1f6f2820,  free space=3fe0000000000000018k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [libjvm.so+0x71aca3]
+V  [libjvm.so+0x71acf1]
+V  [libjvm.so+0x3e8d2c]
+V  [libjvm.so+0x415a89]
+
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+  0x00007f7eb00af800 JavaThread "Low Memory Detector" daemon [_thread_blocked, id=11861, stack(0x00007f7e1f0ee000,0x00007f7e1f1ef000)]
+  0x00007f7eb00ad800 JavaThread "CompilerThread1" daemon [_thread_blocked, id=11860, stack(0x00007f7e1f1ef000,0x00007f7e1f2f0000)]
+  0x00007f7eb00aa800 JavaThread "CompilerThread0" daemon [_thread_blocked, id=11859, stack(0x00007f7e1f2f0000,0x00007f7e1f3f1000)]
+  0x00007f7e08001000 JavaThread "JDWP Command Reader" daemon [_thread_in_native, id=11855, stack(0x00007f7e1f3f1000,0x00007f7e1f4f2000)]
+  0x00007f7eb00a8800 JavaThread "JDWP Event Helper Thread" daemon [_thread_blocked, id=11854, stack(0x00007f7e1f4f2000,0x00007f7e1f5f3000)]
+=>0x00007f7eb00a4800 JavaThread "JDWP Transport Listener: dt_socket" daemon [_thread_in_vm, id=11853, stack(0x00007f7e1f5f3000,0x00007f7e1f6f4000)]
+  0x00007f7eb0096000 JavaThread "Signal Dispatcher" daemon [_thread_blocked, id=11851, stack(0x00007f7e1f7f8000,0x00007f7e1f8f9000)]
+  0x00007f7eb0070000 JavaThread "Finalizer" daemon [_thread_blocked, id=11850, stack(0x00007f7e1f8f9000,0x00007f7e1f9fa000)]
+  0x00007f7eb006e000 JavaThread "Reference Handler" daemon [_thread_blocked, id=11849, stack(0x00007f7e1f9fa000,0x00007f7e1fafb000)]
+  0x00007f7eb000c800 JavaThread "main" [_thread_blocked, id=11842, stack(0x00007f7eb651b000,0x00007f7eb661c000)]
+
+Other Threads:
+  0x00007f7eb0069800 VMThread [stack: 0x00007f7e1fafb000,0x00007f7e1fbfc000] [id=11848]
+  0x00007f7eb00c2800 WatcherThread [stack: 0x00007f7e1efed000,0x00007f7e1f0ee000] [id=11862]
+
+VM state:not at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+Heap
+ PSYoungGen      total 36928K, used 31206K [0x00007f7e83cb0000, 0x00007f7e865e0000, 0x00007f7ead000000)
+  eden space 31680K, 98% used [0x00007f7e83cb0000,0x00007f7e85b29810,0x00007f7e85ba0000)
+  from space 5248K, 0% used [0x00007f7e860c0000,0x00007f7e860c0000,0x00007f7e865e0000)
+  to   space 5248K, 0% used [0x00007f7e85ba0000,0x00007f7e85ba0000,0x00007f7e860c0000)
+ PSOldGen        total 84416K, used 0K [0x00007f7e31600000, 0x00007f7e36870000, 0x00007f7e83cb0000)
+  object space 84416K, 0% used [0x00007f7e31600000,0x00007f7e31600000,0x00007f7e36870000)
+ PSPermGen       total 21248K, used 3259K [0x00007f7e2c200000, 0x00007f7e2d6c0000, 0x00007f7e31600000)
+  object space 21248K, 15% used [0x00007f7e2c200000,0x00007f7e2c52ed50,0x00007f7e2d6c0000)
+
+Dynamic libraries:
+40000000-40009000 r-xp 00000000 08:05 9176871                            /home/sliver/software/jdk1.6.0_21/bin/java
+40108000-4010a000 rwxp 00008000 08:05 9176871                            /home/sliver/software/jdk1.6.0_21/bin/java
+40637000-40658000 rwxp 00000000 00:00 0                                  [heap]
+7f7dec000000-7f7dec021000 rwxp 00000000 00:00 0 
+7f7dec021000-7f7df0000000 ---p 00000000 00:00 0 
+7f7df0000000-7f7df0021000 rwxp 00000000 00:00 0 
+7f7df0021000-7f7df4000000 ---p 00000000 00:00 0 
+7f7df4000000-7f7df4057000 rwxp 00000000 00:00 0 
+7f7df4057000-7f7df8000000 ---p 00000000 00:00 0 
+7f7df8000000-7f7df80e2000 rwxp 00000000 00:00 0 
+7f7df80e2000-7f7dfc000000 ---p 00000000 00:00 0 
+7f7dfc000000-7f7dfc021000 rwxp 00000000 00:00 0 
+7f7dfc021000-7f7e00000000 ---p 00000000 00:00 0 
+7f7e00000000-7f7e00021000 rwxp 00000000 00:00 0 
+7f7e00021000-7f7e04000000 ---p 00000000 00:00 0 
+7f7e04000000-7f7e04021000 rwxp 00000000 00:00 0 
+7f7e04021000-7f7e08000000 ---p 00000000 00:00 0 
+7f7e08000000-7f7e08021000 rwxp 00000000 00:00 0 
+7f7e08021000-7f7e0c000000 ---p 00000000 00:00 0 
+7f7e0c000000-7f7e0c021000 rwxp 00000000 00:00 0 
+7f7e0c021000-7f7e10000000 ---p 00000000 00:00 0 
+7f7e10000000-7f7e10021000 rwxp 00000000 00:00 0 
+7f7e10021000-7f7e14000000 ---p 00000000 00:00 0 
+7f7e14000000-7f7e14021000 rwxp 00000000 00:00 0 
+7f7e14021000-7f7e18000000 ---p 00000000 00:00 0 
+7f7e18000000-7f7e18021000 rwxp 00000000 00:00 0 
+7f7e18021000-7f7e1c000000 ---p 00000000 00:00 0 
+7f7e1efed000-7f7e1efee000 ---p 00000000 00:00 0 
+7f7e1efee000-7f7e1f0ee000 rwxp 00000000 00:00 0 
+7f7e1f0ee000-7f7e1f0f1000 ---p 00000000 00:00 0 
+7f7e1f0f1000-7f7e1f1ef000 rwxp 00000000 00:00 0 
+7f7e1f1ef000-7f7e1f1f2000 ---p 00000000 00:00 0 
+7f7e1f1f2000-7f7e1f2f0000 rwxp 00000000 00:00 0 
+7f7e1f2f0000-7f7e1f2f3000 ---p 00000000 00:00 0 
+7f7e1f2f3000-7f7e1f3f1000 rwxp 00000000 00:00 0 
+7f7e1f3f1000-7f7e1f3f4000 ---p 00000000 00:00 0 
+7f7e1f3f4000-7f7e1f4f2000 rwxp 00000000 00:00 0 
+7f7e1f4f2000-7f7e1f4f5000 ---p 00000000 00:00 0 
+7f7e1f4f5000-7f7e1f5f3000 rwxp 00000000 00:00 0 
+7f7e1f5f3000-7f7e1f5f6000 ---p 00000000 00:00 0 
+7f7e1f5f6000-7f7e1f6f4000 rwxp 00000000 00:00 0 
+7f7e1f6f4000-7f7e1f6f7000 r-xp 00000000 08:05 9177541                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libdt_socket.so
+7f7e1f6f7000-7f7e1f7f6000 ---p 00003000 08:05 9177541                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libdt_socket.so
+7f7e1f7f6000-7f7e1f7f8000 rwxp 00002000 08:05 9177541                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libdt_socket.so
+7f7e1f7f8000-7f7e1f7fb000 ---p 00000000 00:00 0 
+7f7e1f7fb000-7f7e1f8f9000 rwxp 00000000 00:00 0 
+7f7e1f8f9000-7f7e1f8fc000 ---p 00000000 00:00 0 
+7f7e1f8fc000-7f7e1f9fa000 rwxp 00000000 00:00 0 
+7f7e1f9fa000-7f7e1f9fd000 ---p 00000000 00:00 0 
+7f7e1f9fd000-7f7e1fafb000 rwxp 00000000 00:00 0 
+7f7e1fafb000-7f7e1fafc000 ---p 00000000 00:00 0 
+7f7e1fafc000-7f7e20000000 rwxp 00000000 00:00 0 
+7f7e20000000-7f7e20021000 rwxp 00000000 00:00 0 
+7f7e20021000-7f7e24000000 ---p 00000000 00:00 0 
+7f7e24000000-7f7e24021000 rwxp 00000000 00:00 0 
+7f7e24021000-7f7e28000000 ---p 00000000 00:00 0 
+7f7e28000000-7f7e28021000 rwxp 00000000 00:00 0 
+7f7e28021000-7f7e2c000000 ---p 00000000 00:00 0 
+7f7e2c0ff000-7f7e2d6c0000 rwxp 00000000 00:00 0 
+7f7e2d6c0000-7f7e31600000 rwxp 00000000 00:00 0 
+7f7e31600000-7f7e36870000 rwxp 00000000 00:00 0 
+7f7e36870000-7f7e83cb0000 rwxp 00000000 00:00 0 
+7f7e83cb0000-7f7e865e0000 rwxp 00000000 00:00 0 
+7f7e865e0000-7f7ead000000 rwxp 00000000 00:00 0 
+7f7ead000000-7f7ead270000 rwxp 00000000 00:00 0 
+7f7ead270000-7f7eb012b000 rwxp 00000000 00:00 0 
+7f7eb012b000-7f7eb4000000 ---p 00000000 00:00 0 
+7f7eb4096000-7f7eb40ca000 rwxp 00000000 00:00 0 
+7f7eb40ca000-7f7eb4261000 r-xs 03014000 08:05 9175217                    /home/sliver/software/jdk1.6.0_21/jre/lib/rt.jar
+7f7eb4261000-7f7eb4289000 rwxp 00000000 00:00 0 
+7f7eb4289000-7f7eb428a000 ---p 00000000 00:00 0 
+7f7eb428a000-7f7eb438a000 rwxp 00000000 00:00 0 
+7f7eb438a000-7f7eb438b000 ---p 00000000 00:00 0 
+7f7eb438b000-7f7eb448b000 rwxp 00000000 00:00 0 
+7f7eb448b000-7f7eb448c000 ---p 00000000 00:00 0 
+7f7eb448c000-7f7eb458c000 rwxp 00000000 00:00 0 
+7f7eb458c000-7f7eb458d000 ---p 00000000 00:00 0 
+7f7eb458d000-7f7eb4698000 rwxp 00000000 00:00 0 
+7f7eb4698000-7f7eb46b7000 rwxp 00000000 00:00 0 
+7f7eb46b7000-7f7eb46e1000 rwxp 00000000 00:00 0 
+7f7eb46e1000-7f7eb494b000 rwxp 00000000 00:00 0 
+7f7eb494b000-7f7eb4956000 rwxp 00000000 00:00 0 
+7f7eb4956000-7f7eb4975000 rwxp 00000000 00:00 0 
+7f7eb4975000-7f7eb499f000 rwxp 00000000 00:00 0 
+7f7eb499f000-7f7eb4c08000 rwxp 00000000 00:00 0 
+7f7eb4c08000-7f7eb4c1d000 rwxp 00000000 00:00 0 
+7f7eb4c1d000-7f7eb4d52000 rwxp 00000000 00:00 0 
+7f7eb4d52000-7f7eb4d53000 rwxp 00000000 00:00 0 
+7f7eb4d53000-7f7eb4d61000 r-xp 00000000 08:05 9177516                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libzip.so
+7f7eb4d61000-7f7eb4e63000 ---p 0000e000 08:05 9177516                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libzip.so
+7f7eb4e63000-7f7eb4e66000 rwxp 00010000 08:05 9177516                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libzip.so
+7f7eb4e66000-7f7eb4e67000 rwxp 00000000 00:00 0 
+7f7eb4e67000-7f7eb4e73000 r-xp 00000000 08:01 524417                     /lib/x86_64-linux-gnu/libnss_files-2.15.so
+7f7eb4e73000-7f7eb5072000 ---p 0000c000 08:01 524417                     /lib/x86_64-linux-gnu/libnss_files-2.15.so
+7f7eb5072000-7f7eb5073000 r-xp 0000b000 08:01 524417                     /lib/x86_64-linux-gnu/libnss_files-2.15.so
+7f7eb5073000-7f7eb5074000 rwxp 0000c000 08:01 524417                     /lib/x86_64-linux-gnu/libnss_files-2.15.so
+7f7eb5074000-7f7eb507e000 r-xp 00000000 08:01 524413                     /lib/x86_64-linux-gnu/libnss_nis-2.15.so
+7f7eb507e000-7f7eb527e000 ---p 0000a000 08:01 524413                     /lib/x86_64-linux-gnu/libnss_nis-2.15.so
+7f7eb527e000-7f7eb527f000 r-xp 0000a000 08:01 524413                     /lib/x86_64-linux-gnu/libnss_nis-2.15.so
+7f7eb527f000-7f7eb5280000 rwxp 0000b000 08:01 524413                     /lib/x86_64-linux-gnu/libnss_nis-2.15.so
+7f7eb5280000-7f7eb5288000 r-xp 00000000 08:01 524418                     /lib/x86_64-linux-gnu/libnss_compat-2.15.so
+7f7eb5288000-7f7eb5487000 ---p 00008000 08:01 524418                     /lib/x86_64-linux-gnu/libnss_compat-2.15.so
+7f7eb5487000-7f7eb5488000 r-xp 00007000 08:01 524418                     /lib/x86_64-linux-gnu/libnss_compat-2.15.so
+7f7eb5488000-7f7eb5489000 rwxp 00008000 08:01 524418                     /lib/x86_64-linux-gnu/libnss_compat-2.15.so
+7f7eb5489000-7f7eb5b6e000 r-xp 00000000 08:01 5642572                    /usr/lib/locale/locale-archive
+7f7eb5b6e000-7f7eb5b71000 r-xp 00000000 08:05 9177507                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libnpt.so
+7f7eb5b71000-7f7eb5c70000 ---p 00003000 08:05 9177507                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libnpt.so
+7f7eb5c70000-7f7eb5c71000 rwxp 00002000 08:05 9177507                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libnpt.so
+7f7eb5c71000-7f7eb5ca7000 r-xp 00000000 08:05 9177533                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libjdwp.so
+7f7eb5ca7000-7f7eb5da6000 ---p 00036000 08:05 9177533                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libjdwp.so
+7f7eb5da6000-7f7eb5db0000 rwxp 00035000 08:05 9177533                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libjdwp.so
+7f7eb5db0000-7f7eb5db7000 r-xp 00000000 08:05 9177518                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/native_threads/libhpi.so
+7f7eb5db7000-7f7eb5eb8000 ---p 00007000 08:05 9177518                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/native_threads/libhpi.so
+7f7eb5eb8000-7f7eb5eba000 rwxp 00008000 08:05 9177518                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/native_threads/libhpi.so
+7f7eb5eba000-7f7eb5ebb000 rwxp 00000000 00:00 0 
+7f7eb5ebb000-7f7eb5ed2000 r-xp 00000000 08:01 528162                     /lib/x86_64-linux-gnu/libnsl-2.15.so
+7f7eb5ed2000-7f7eb60d1000 ---p 00017000 08:01 528162                     /lib/x86_64-linux-gnu/libnsl-2.15.so
+7f7eb60d1000-7f7eb60d2000 r-xp 00016000 08:01 528162                     /lib/x86_64-linux-gnu/libnsl-2.15.so
+7f7eb60d2000-7f7eb60d3000 rwxp 00017000 08:01 528162                     /lib/x86_64-linux-gnu/libnsl-2.15.so
+7f7eb60d3000-7f7eb60d5000 rwxp 00000000 00:00 0 
+7f7eb60d5000-7f7eb60fd000 r-xp 00000000 08:05 9177529                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libjava.so
+7f7eb60fd000-7f7eb61fd000 ---p 00028000 08:05 9177529                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libjava.so
+7f7eb61fd000-7f7eb6204000 rwxp 00028000 08:05 9177529                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libjava.so
+7f7eb6204000-7f7eb6211000 r-xp 00000000 08:05 9177511                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libverify.so
+7f7eb6211000-7f7eb6310000 ---p 0000d000 08:05 9177511                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libverify.so
+7f7eb6310000-7f7eb6313000 rwxp 0000c000 08:05 9177511                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/libverify.so
+7f7eb6313000-7f7eb631a000 r-xp 00000000 08:01 524411                     /lib/x86_64-linux-gnu/librt-2.15.so
+7f7eb631a000-7f7eb6519000 ---p 00007000 08:01 524411                     /lib/x86_64-linux-gnu/librt-2.15.so
+7f7eb6519000-7f7eb651a000 r-xp 00006000 08:01 524411                     /lib/x86_64-linux-gnu/librt-2.15.so
+7f7eb651a000-7f7eb651b000 rwxp 00007000 08:01 524411                     /lib/x86_64-linux-gnu/librt-2.15.so
+7f7eb651b000-7f7eb651e000 ---p 00000000 00:00 0 
+7f7eb651e000-7f7eb661c000 rwxp 00000000 00:00 0 
+7f7eb661c000-7f7eb6717000 r-xp 00000000 08:01 524415                     /lib/x86_64-linux-gnu/libm-2.15.so
+7f7eb6717000-7f7eb6916000 ---p 000fb000 08:01 524415                     /lib/x86_64-linux-gnu/libm-2.15.so
+7f7eb6916000-7f7eb6917000 r-xp 000fa000 08:01 524415                     /lib/x86_64-linux-gnu/libm-2.15.so
+7f7eb6917000-7f7eb6918000 rwxp 000fb000 08:01 524415                     /lib/x86_64-linux-gnu/libm-2.15.so
+7f7eb6918000-7f7eb70f2000 r-xp 00000000 08:05 9177536                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/server/libjvm.so
+7f7eb70f2000-7f7eb71f4000 ---p 007da000 08:05 9177536                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/server/libjvm.so
+7f7eb71f4000-7f7eb7385000 rwxp 007dc000 08:05 9177536                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/server/libjvm.so
+7f7eb7385000-7f7eb73c0000 rwxp 00000000 00:00 0 
+7f7eb73c0000-7f7eb7575000 r-xp 00000000 08:01 524311                     /lib/x86_64-linux-gnu/libc-2.15.so
+7f7eb7575000-7f7eb7774000 ---p 001b5000 08:01 524311                     /lib/x86_64-linux-gnu/libc-2.15.so
+7f7eb7774000-7f7eb7778000 r-xp 001b4000 08:01 524311                     /lib/x86_64-linux-gnu/libc-2.15.so
+7f7eb7778000-7f7eb777a000 rwxp 001b8000 08:01 524311                     /lib/x86_64-linux-gnu/libc-2.15.so
+7f7eb777a000-7f7eb777f000 rwxp 00000000 00:00 0 
+7f7eb777f000-7f7eb7781000 r-xp 00000000 08:01 524300                     /lib/x86_64-linux-gnu/libdl-2.15.so
+7f7eb7781000-7f7eb7981000 ---p 00002000 08:01 524300                     /lib/x86_64-linux-gnu/libdl-2.15.so
+7f7eb7981000-7f7eb7982000 r-xp 00002000 08:01 524300                     /lib/x86_64-linux-gnu/libdl-2.15.so
+7f7eb7982000-7f7eb7983000 rwxp 00003000 08:01 524300                     /lib/x86_64-linux-gnu/libdl-2.15.so
+7f7eb7983000-7f7eb799b000 r-xp 00000000 08:01 524409                     /lib/x86_64-linux-gnu/libpthread-2.15.so
+7f7eb799b000-7f7eb7b9a000 ---p 00018000 08:01 524409                     /lib/x86_64-linux-gnu/libpthread-2.15.so
+7f7eb7b9a000-7f7eb7b9b000 r-xp 00017000 08:01 524409                     /lib/x86_64-linux-gnu/libpthread-2.15.so
+7f7eb7b9b000-7f7eb7b9c000 rwxp 00018000 08:01 524409                     /lib/x86_64-linux-gnu/libpthread-2.15.so
+7f7eb7b9c000-7f7eb7ba0000 rwxp 00000000 00:00 0 
+7f7eb7ba0000-7f7eb7bc2000 r-xp 00000000 08:01 524421                     /lib/x86_64-linux-gnu/ld-2.15.so
+7f7eb7bcc000-7f7eb7bdb000 r-xs 00676000 08:05 9177580                    /home/sliver/software/jdk1.6.0_21/jre/lib/charsets.jar
+7f7eb7bdb000-7f7eb7be5000 rwxp 00000000 00:00 0 
+7f7eb7be5000-7f7eb7c9b000 rwxp 00000000 00:00 0 
+7f7eb7c9b000-7f7eb7c9e000 rwxp 00000000 00:00 0 
+7f7eb7c9e000-7f7eb7ca5000 r-xp 00000000 08:05 9177501                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/jli/libjli.so
+7f7eb7ca5000-7f7eb7da6000 ---p 00007000 08:05 9177501                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/jli/libjli.so
+7f7eb7da6000-7f7eb7da8000 rwxp 00008000 08:05 9177501                    /home/sliver/software/jdk1.6.0_21/jre/lib/amd64/jli/libjli.so
+7f7eb7da8000-7f7eb7da9000 rwxp 00000000 00:00 0 
+7f7eb7db6000-7f7eb7dbe000 rwxs 00000000 08:01 4194355                    /tmp/hsperfdata_sliver/11837
+7f7eb7dbe000-7f7eb7dbf000 rwxp 00000000 00:00 0 
+7f7eb7dbf000-7f7eb7dc0000 r-xp 00000000 00:00 0 
+7f7eb7dc0000-7f7eb7dc2000 rwxp 00000000 00:00 0 
+7f7eb7dc2000-7f7eb7dc3000 r-xp 00022000 08:01 524421                     /lib/x86_64-linux-gnu/ld-2.15.so
+7f7eb7dc3000-7f7eb7dc5000 rwxp 00023000 08:01 524421                     /lib/x86_64-linux-gnu/ld-2.15.so
+7fff0c654000-7fff0c676000 rwxp 00000000 00:00 0                          [stack]
+7fff0c7ff000-7fff0c800000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+
+VM Arguments:
+jvm_args: -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:60302 -Dfile.encoding=GB2312 
+java_command: bit.crawl.bloomfilter.BloomfilterBenchmark
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+JAVA_HOME=/home/sliver/software/jdk1.6.0_21
+CLASSPATH=/home/sliver/software/jdk1.6.0_21/lib
+PATH=/usr/lib/lightdm/lightdm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/home/sliver/software/jdk1.6.0_21/bin:/home/sliver/software/jdk1.6.0_21/bin:/home/sliver/software/indri-5.4/bin
+LD_LIBRARY_PATH=/home/sliver/software/jdk1.6.0_21/jre/lib/amd64/server:/home/sliver/software/jdk1.6.0_21/jre/lib/amd64:/home/sliver/software/jdk1.6.0_21/jre/../lib/amd64:/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/amd64/server:/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/amd64:/usr/lib/jvm/java-6-openjdk-amd64/jre/../lib/amd64
+SHELL=/bin/bash
+DISPLAY=:0
+
+Signal Handlers:
+SIGSEGV: [libjvm.so+0x7311c0], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGBUS: [libjvm.so+0x7311c0], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGFPE: [libjvm.so+0x5f5da0], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGPIPE: [libjvm.so+0x5f5da0], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGXFSZ: [libjvm.so+0x5f5da0], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGILL: [libjvm.so+0x5f5da0], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGUSR1: SIG_DFL, sa_mask[0]=0x00000000, sa_flags=0x00000000
+SIGUSR2: [libjvm.so+0x5f85c0], sa_mask[0]=0x00000004, sa_flags=0x10000004
+SIGHUP: [libjvm.so+0x5f8310], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGINT: [libjvm.so+0x5f8310], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGTERM: [libjvm.so+0x5f8310], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+SIGQUIT: [libjvm.so+0x5f8310], sa_mask[0]=0x7ffbfeff, sa_flags=0x10000004
+
+
+---------------  S Y S T E M  ---------------
+
+OS:wheezy/sid
+
+uname:Linux 3.2.0-53-generic #81-Ubuntu SMP Thu Aug 22 21:01:03 UTC 2013 x86_64
+libc:glibc 2.15 NPTL 2.15 
+rlimit: STACK 8192k, CORE 0k, NPROC 63144, NOFILE 4096, AS infinity
+load average:0.16 0.73 1.10
+
+CPU:total 4 (8 cores per cpu, 2 threads per core) family 6 model 58 stepping 9, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, ht
+
+Memory: 4k page, physical 8100064k(2527016k free), swap 15822844k(15822448k free)
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (17.0-b16) for linux-amd64 JRE (1.6.0_21-b06), built on Jun 22 2010 01:10:00 by "java_re" with gcc 3.2.2 (SuSE Linux)
+
+time: Thu Sep 12 10:15:32 2013
+elapsed time: 60 seconds
+

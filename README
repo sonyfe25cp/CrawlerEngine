@@ -1,6 +1,16 @@
 ========================
 CrawlerEngine - 简单的爬虫
 ========================
+
+Version : 1.0.2
+Description:使用Bloom Filter 进行url的去重判断，以大幅提高去重判断速度
+使用方法：
+  若所有已爬url数据已插入bloomFilter中，则直接运行爬取程序
+  若需从数据库读取已爬url数据加载进bloomFilter，则在CrawlerEngine/build/dist/crawlerengine/目录下执行如下命令：
+  bin/createbloomfilter.sh real-world-tasks/bloomFilter-config.spring.xml 初始化bloomFilter 后再进行爬取
+
+========================
+
 Version： 1.0.1
 Description: 增加主题爬虫功能，多个词之间是或的关系。
 使用方法：
