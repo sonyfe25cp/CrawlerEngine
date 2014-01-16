@@ -9,6 +9,8 @@ import java.io.ObjectOutputStream;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,10 +20,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+
 
 import bit.crawl.bloomfilter.BloomFilter;
 import bit.crawl.crawler.impl.FetchJob;
@@ -91,6 +96,11 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 	 * BloomFilter to check whether the element been added,if not add it
 	 */
 	private BloomFilter<String> bloomFilter = null;
+	
+	/**
+	 * time format configure
+	 */
+	private TimeFormat timeFormat = null;
 
 	private boolean topicCrawler = false;
 	private List<String> topicWords = new ArrayList<String>();
@@ -216,6 +226,15 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 	public void setTopicWords(List<String> topicWords) {
 		this.topicWords = topicWords;
 	}
+	
+	
+	public TimeFormat getTimeFormat() {
+		return timeFormat;
+	}
+
+	public void setTimeFormat(TimeFormat timeFormat) {
+		this.timeFormat = timeFormat;
+	}
 
 	/**
 	 * A bean-style empty constructor.
@@ -253,6 +272,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 	 */
 	public void run() {
 		try {
+			
 			logger.info("Start crawling.");
 			logger.info("Default charset:" + getEncoding());
 			logger.info("Loading crawl history");
@@ -288,9 +308,115 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 			}
 			executor = new ThreadPoolExecutor(getMaxThreads(), getMaxThreads(),
 					0, TimeUnit.SECONDS, workQueue);
+			
+			int begin = timeFormat.getBegin();
+			int end = timeFormat.getEnd();
+			System.out.println("begin is : " + begin + ", end is : " + end);
 
-			reportLinks(getInitialUrls(), 0);
-
+			List<String> newInitialUrls = new ArrayList<String>();
+			List<FilterRule> frs = new ArrayList<FilterRule>();
+			List<FilterRule> original = getFilterRules();
+			
+			if ((begin != 0) && (end != 0) && (begin < end)) {                          //通过begin/end配置抓取多日新闻
+				for(int i = timeFormat.getBegin(); i <= timeFormat.getEnd(); i++){
+					for (String link : getInitialUrls()) {
+						if (link.matches("(.*)#(.*)#(.*)")) {
+							String[] substring = link.split("#");
+							String date = Integer.toString(i);
+							StringBuilder sb = new StringBuilder();
+							sb.append(substring[0]);
+							sb.append(date);
+							sb.append(substring[2]);
+							link = sb.toString();
+							newInitialUrls.add(link);
+							String storeFormat = timeFormat.toStoreFormat(date);
+							timeFormat.setStoreTimeFormat(storeFormat);
+							String followFormat = timeFormat.toFollowFormat(date);
+							timeFormat.setFollowTimeFormat(followFormat);
+							for (FilterRule fr : original) {
+								FilterRule fre = new FilterRule();
+								fre.setAction(fr.getAction());
+								fre.setNegative(fr.isNegative());
+								fre.setPattern(fr.getPattern());
+								Pattern p = fr.getPattern();
+								
+								String pstring = null;
+								pstring = p.toString();
+								System.out.println("********regex is " + pstring);
+								if (pstring.contains("#aimStoreFormat#")){
+									pstring = pstring.replaceFirst("#aimStoreFormat#", timeFormat.getStoreTimeFormat());
+									System.out.println("#######replaced pattern content is " + pstring);
+									fre.setPattern(Pattern.compile(pstring));
+									frs.add(fre);
+								}
+								else if (pstring.contains("#aimFollowFormat#")){
+									pstring = pstring.replaceFirst("#aimFollowFormat#", timeFormat.getFollowTimeFormat());
+									System.out.println("########replaced pattern content is " + pstring);
+									fre.setPattern(Pattern.compile(pstring));
+									frs.add(fre);
+								}
+								else if (pstring.equals(".*")){
+									if (i == timeFormat.getEnd()) {
+										frs.add(fre);
+									}
+								}
+															
+							}
+						}
+						else
+							newInitialUrls.add(link);
+					}
+				}
+				
+				setFilterRules(frs);
+			}
+			else {  
+	//////////////新加///////////////////convert InitialUrls into standard format
+				for(String link : getInitialUrls()){
+					if(link.matches("(.*)#\\d{8}#(.*)")){                //如果种子链接里包含#20140111#式样，进行url转换
+						String[] substring = link.split("#");
+						String date = substring[1];
+						StringBuilder sb = new StringBuilder();
+						for(String str : substring)
+							sb.append(str);
+						link = sb.toString();
+						newInitialUrls.add(link);
+						String storeFormat = timeFormat.toStoreFormat(date);
+						timeFormat.setStoreTimeFormat(storeFormat);
+						String followFormat = timeFormat.toFollowFormat(date);
+						timeFormat.setFollowTimeFormat(followFormat);
+					}
+					else{                                                 //规范形式，无需转换
+						newInitialUrls.add(link);
+					}
+				}
+				
+	/////////////////////convert patterns
+				
+				for (FilterRule fr : getFilterRules()) {
+					for (Pattern p : fr.getPatterns()) {
+						String pstring = null;
+						pstring = p.toString();
+						System.out.println("********regex is " + p.toString());
+						if (pstring.contains("#aimStoreFormat#")){
+							pstring = pstring.replaceFirst("#aimStoreFormat#", timeFormat.getStoreTimeFormat());
+							System.out.println("**************replaced pattern content is " + pstring);
+							fr.setPattern(Pattern.compile(pstring));
+						}
+						else if (pstring.contains("#aimFollowFormat#")){
+							pstring = pstring.replaceFirst("#aimFollowFormat#", timeFormat.getFollowTimeFormat());
+							System.out.println("**************replaced pattern content is " + pstring);
+							fr.setPattern(Pattern.compile(pstring));
+						}
+					}
+					frs.add(fr);
+				}
+				//new FileRules after convert
+				setFilterRules(frs);
+			}
+							
+			reportLinks(newInitialUrls, 0);			
+			
 			latch.await();
 			if (crawlHistory != null) {
 				if (!crawlHistory.getBufferSet().isEmpty()) {
@@ -332,18 +458,15 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 			e.printStackTrace();
 		}
 		
-		
-		
-		
 		logger.info("Crawling stopped.");
 		logger.info("Begin to generate the report.");
 		pdfReporter.report(topicWords, total, topicSpecific, pairs);
 		logger.info("Generete the report successfully.");
 	}
-
+////////////////////////修改 201401100952 
 	private CrawlAction getFilterAction(String url) {
 		CrawlAction action = null;
-		for (FilterRule fr : getFilterRules()) {
+		for (FilterRule fr : getFilterRules()){
 			action = fr.judge(url);
 			if (action != null) {
 				return action;
@@ -360,7 +483,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 		total++;
 		if (getFilterAction(url) == CrawlAction.STORE) {
 			boolean saveFlag = true;
-			if (topicCrawler) {// topic specifi crawler mode
+			if (topicCrawler) {// topic specify crawler mode
 				saveFlag = topicFilter(pageInfo);
 			}
 			if (saveFlag) {
@@ -439,8 +562,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 		synchronized (dispatched) {
 			for (String link : urls) {
 				if (dispatched.contains(link)) {// 已抓过??
-					logger.debug(String.format("Discard dispatched link %s",
-							link));
+					logger.debug(String.format("Discard dispatched link %s", link));
 					continue;
 				}
 				// if(crawlHistory!=null){

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+<bean id="pageSaver" class="bit.crawl.pagesavers.PageStorePageSaver"
+destroy-method="close">
+<property name="taskName" value="zhaopin_beijing" />
+<property name="baseDir" value="crawled-pages" />
+</bean><!-- mysql database -->
+<bean id="dataSource" class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
+<property name="serverName" value="127.0.0.1" />
+<property name="user" value="root" />
+<property name="password" value="123iop" />
+<property name="databaseName" value="crawlhistory" />
+</bean>
+<bean id="crawlHistory" class="bit.crawl.crawler.CrawlHistory">
+<property name="dataSource" ref="dataSource" />
+<property name="tableName" value="zhaopin_beijing" />
+<property name="bufferSize" value="100" />
+</bean>
+<bean id="topicCrawlHistory" class="bit.crawl.crawler.CrawlHistory">
+<property name="dataSource" ref="dataSource" />
+<property name="tableName" value="zhaopin_beijing_topic" />
+<property name="bufferSize" value="10" />
+</bean>
+<!-- for pdf report -->
+<bean id="pdfReporter" class="bit.crawl.reporter.PDFReporter">
+<property name="title" value="DLDE网络监控系统"/>
+<property name="site"  value="智联招聘(www.zhaopin.com)"/>
+</bean>
+
+<bean id="timeFormat" class="bit.crawl.crawler.TimeFormat">
+<property name="standard" value="yyyyMMdd" />
+<property name="aimStoreFormat" value="yyyy_MM/dd" />
+<property name="aimFollowFormat" value="yyyyMMdd" />
+<property name="begin" value="0"></property>
+<property name="end" value="0"></property>
+</bean>
+<bean id="crawler" class="bit.crawl.crawler.Crawler">
+<property name="maxThreads" value="20" />
+<property name="maxDepth" value="2" />
+<property name="encoding" value="UTF-8" />
+<property name="initialUrls">
+<list>
+<!-- 智联招聘 -->
+<value>http://sou.zhaopin.com/jobs/SearchResult.ashx?jl=%e5%8c%97%e4%ba%ac&amp;sm=0&amp;sf=0&amp;sg=9d6aaa41ba71467c8d974a0a008dc465&amp;p=1</value>
+</list>
+</property><property name="filterRules">
+<list>
+<!-- 保存 -->
+<bean class="bit.crawl.crawler.FilterRule" p:pattern="http://jobs.zhaopin.com/\d{15}.htm\?ssidkey=y&amp;ss=201&amp;ff=03" p:action="STORE" />
+<!-- 翻页-->
+<bean class="bit.crawl.crawler.FilterRule" p:pattern="http://sou.zhaopin.com/jobs/SearchResult.ashx\?jl=(?i)%e5%8c%97%e4%ba%ac(?-i)&amp;sm=0&amp;sf=0&amp;sg=9d6aaa41ba71467c8d974a0a008dc465&amp;p=[0-9]+" p:action="FOLLOW" />
+<!-- AVOID -->
+<bean class="bit.crawl.crawler.FilterRule" p:pattern=".*" p:action="AVOID" />
+</list>
+</property>
+<property name="timeFormat">
+<ref bean="timeFormat"></ref>
+</property>
+<property name="pageListeners">
+<list>
+<ref bean="pageSaver" />
+</list>
+</property>
+<property name="crawlHistory">
+<ref bean="crawlHistory" />
+</property>
+<!-- add for topic specific crawler -->
+<property name="topicCrawler" value="false"/>
+<property name="topicCrawlHistory">
+<ref bean="topicCrawlHistory" />
+</property>
+<property name="topicWords">
+<list>
+<value>禽业公司</value>
+ <value>火灾</value>
+</list>
+</property>
+<property name="pdfReporter">
+<ref bean="pdfReporter"/>
+</property>
+</bean>
+</beans>

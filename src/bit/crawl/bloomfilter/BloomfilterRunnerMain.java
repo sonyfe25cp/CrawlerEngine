@@ -29,7 +29,7 @@ public class BloomfilterRunnerMain {
 
     public static void main(String[] argv) {
     	
-    	String taskFileName = "/home/sliver/workspace/CrawlerEngine/real-world-tasks/bloomFilter-config.spring.xml";
+    	String taskFileName = "/home/sliver/workspace2/CrawlerEngine/real-world-tasks/bloomFilter-config.spring.xml";
 
 		ApplicationContext context = new FileSystemXmlApplicationContext("file:" + taskFileName);
 		BloomFilterInit bloomFilterInit = context.getBean("bloomFilterInit", BloomFilterInit.class);

@@ -143,6 +143,10 @@ public class CrawlHistory {
 			Iterator<String> iterator = bufferSet.iterator();
 			conn = dataSource.getConnection();
 			stmt = conn.createStatement();
+			
+			if(checkTableExistence() == false){
+				createTable();
+			}
 			while (iterator.hasNext()) 
 			{
 				String url = iterator.next();
@@ -150,6 +154,8 @@ public class CrawlHistory {
 			}
 			stmt.close();
 			conn.close();
+			
+			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

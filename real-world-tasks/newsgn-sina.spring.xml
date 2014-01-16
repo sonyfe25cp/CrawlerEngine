@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+ 	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<bean id="pageSaver" class="bit.crawl.pagesavers.PageStorePageSaver"
+		destroy-method="close">
+		<property name="taskName" value="newsgn_sina" />
+		<property name="baseDir" value="crawled-pages" />
+	</bean>
+
+	<!-- mysql database -->
+	<bean id="dataSource" class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
+		<property name="serverName" value="127.0.0.1" />
+		<property name="user" value="root" />
+		<property name="password" value="123123" />
+		<property name="databaseName" value="crawlhistory" />
+	</bean>
+
+	<bean id="crawlHistory" class="bit.crawl.crawler.CrawlHistory">
+		<property name="dataSource" ref="dataSource" />
+		<property name="tableName" value="newsgn_sina" />
+		<property name="bufferSize" value="100" />
+	</bean>
+	
+	<bean id="topicCrawlHistory" class="bit.crawl.crawler.CrawlHistory">
+		<property name="dataSource" ref="dataSource" />
+		<property name="tableName" value="newsgn_sina_topic" />
+		<property name="bufferSize" value="10" />
+	</bean>
+	<!-- for pdf report -->
+	<bean id="pdfReporter" class="bit.crawl.reporter.PDFReporter">
+		<property name="title" value="DLDE网络监控系统"/>
+		<property name="site"  value="新浪网(news.sina.com.cn)"/>
+	</bean>
+
+	<bean id="crawler" class="bit.crawl.crawler.Crawler">
+		<property name="maxThreads" value="20" />
+		<property name="maxDepth" value="2" />
+		<property name="encoding" value="UTF-8" />
+		<property name="initialUrls">
+			<list>
+		        <!-- 国内 -->
+		        <value>http://roll.news.sina.com.cn/news/gnxw/gdxw1/index.shtml</value>
+		        <value>http://roll.news.sina.com.cn/news/shxw/shwx/index.shtml</value>
+			</list>
+		</property>
+		<property name="filterRules">
+			<list>
+		        <!-- 国内 -->
+		        <!-- 按年抓 -->
+		        <!-- <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.sina.com.cn/c/2013-\d{2}-\d{2}/\d{12}.shtml" p:action="STORE" /> -->
+		        <!-- 按月抓 -->
+		        <!-- <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.sina.com.cn/c/2013-09-\d{2}/\d{12}.shtml" p:action="STORE" />  -->
+		        <!-- 按天抓 -->
+		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.sina.com.cn/c/2013-09-15/\d{12}.shtml" p:action="STORE" />
+		        
+		        <!-- 社会 -->
+		        <!-- 按年抓 -->
+		        <!-- <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.sina.com.cn/s/2013-\d{2}-\d{2}/\d{12}.shtml" p:action="STORE" /> -->
+		        <!-- 按月抓 -->
+		        <!-- <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.sina.com.cn/s/2013-09-\d{2}/\d{12}.shtml" p:action="STORE" /> -->
+		        <!-- 按天抓 -->
+		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.sina.com.cn/s/2013-09-16/\d{12}.shtml" p:action="STORE" />
+		        
+		        <!-- 翻页-->
+		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://roll.news.sina.com.cn/news/gnxw/gdxw1/index.shtml" p:action="FOLLOW" />
+		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://roll.news.sina.com.cn/news/gnxw/gdxw1/index_[0-9]+.shtml" p:action="FOLLOW" />
+		        
+		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://roll.news.sina.com.cn/news/shxw/shwx/index.shtml" p:action="FOLLOW" />
+		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://roll.news.sina.com.cn/news/shxw/shwx/index_[0-9]+.shtml" p:action="FOLLOW" />
+		        
+				<bean class="bit.crawl.crawler.FilterRule" p:pattern=".*" p:action="AVOID" />
+			</list>
+		</property>
+		<property name="pageListeners">
+			<list>
+				<ref bean="pageSaver" />
+			</list>
+		</property>
+		<property name="crawlHistory">
+			<ref bean="crawlHistory" />
+		</property>
+		<!-- add for topic specific crawler -->
+		<property name="topicCrawler" value="false"/>
+		<property name="topicCrawlHistory">
+			<ref bean="topicCrawlHistory" />
+		</property>
+	    <property name="topicWords">
+	      <list>
+	        <value>禽业公司</value>
+	        <value>火灾</value>
+	      </list>
+	    </property>
+	    <property name="pdfReporter">
+	    	<ref bean="pdfReporter"/>
+	    </property>
+	</bean>
+</beans>
+

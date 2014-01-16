@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+ 	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<bean id="pageSaver" class="bit.crawl.pagesavers.PageStorePageSaver"
+		destroy-method="close">
+		<property name="taskName" value="newsgn_fenghuang" />
+		<property name="baseDir" value="crawled-pages" />
+	</bean>
+
+	<!-- mysql database -->
+	<bean id="dataSource" class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
+		<property name="serverName" value="127.0.0.1" />
+		<property name="user" value="root" />
+		<property name="password" value="123iop" />
+		<property name="databaseName" value="crawlhistory" />
+	</bean>
+
+	<bean id="crawlHistory" class="bit.crawl.crawler.CrawlHistory">
+		<property name="dataSource" ref="dataSource" />
+		<property name="tableName" value="newsgn_fenghuang" />
+		<property name="bufferSize" value="100" />
+	</bean>
+	
+	<bean id="topicCrawlHistory" class="bit.crawl.crawler.CrawlHistory">
+		<property name="dataSource" ref="dataSource" />
+		<property name="tableName" value="newsgn_fenghuang_topic" />
+		<property name="bufferSize" value="10" />
+	</bean>
+	<!-- for pdf report -->
+	<bean id="pdfReporter" class="bit.crawl.reporter.PDFReporter">
+		<property name="title" value="DLDE网络监控系统"/>
+		<property name="site"  value=" 凤凰网(news.ifeng.com)"/>
+	</bean>
+
+	 <!-- timeFormat类，设置需要根据日期抓取的网站的相关配置信息 -->
+	 <!-- standard   标准时间格式，目前支持yyyyMMdd格式 -->
+	 <!-- aimStoreFormat   要store的页面的对应时间格式 -->
+	 <!-- aimFollowFormat   要follow的页面的对应时间格式 -->
+	 <!-- begin/end         要抓取多日的内容，可以通过设置开始日期begin和结束日期end生成多个种子 -->
+	 <!-- begin/end         若只抓一天的，不使用此功能，请务必将begin/end都置零 -->
+	 <bean id="timeFormat" class="bit.crawl.crawler.TimeFormat">
+	    <property name="standard" value="yyyyMMdd" />
+	    <property name="aimStoreFormat" value="yyyy_MM/dd" />
+	    <property name="aimFollowFormat" value="yyyyMMdd" />
+	    <property name="begin" value="0"></property>
+	    <property name="end" value="0"></property>
+	  </bean>
+
+	<bean id="crawler" class="bit.crawl.crawler.Crawler">
+		<property name="maxThreads" value="20" />
+		<property name="maxDepth" value="2" />
+		<property name="encoding" value="UTF-8" />
+		<property name="initialUrls">
+			<list>
+		        <!-- 大陆即时新闻 -->
+		        <!-- 若只抓某天的，在##内填入相应日期即可，并确保已经timeFormat里的begin/end置零 -->
+		        <value>http://news.ifeng.com/mainland/rt-channel/rtlist_#20140114#/1.shtml</value>
+			</list>
+		</property>
+		<property name="filterRules">
+			<list>
+		        <!-- 地方 -->
+		        <!-- 按年抓 -->
+		        <!-- <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.ifeng.com/mainland/detail_2013_\d{2}/\d{2}/\d{8}_0.shtml" p:action="STORE" /> -->
+		        <!-- 按月抓 -->
+		        <!-- <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.ifeng.com/mainland/detail_2013_09/\d{2}/\d{8}_0.shtml" p:action="STORE" />  -->
+		        <!-- 按天抓 -->
+		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.ifeng.com/mainland/(.*)detail_#aimStoreFormat#/\d{8}_0.shtml" p:action="STORE" />
+		        
+		        
+		        <!-- 翻页-->
+		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.ifeng.com/mainland/rt-channel/rtlist_#aimFollowFormat#/[0-9]+.shtml" p:action="FOLLOW" />
+		       
+		        <!-- AVOID -->
+				<bean class="bit.crawl.crawler.FilterRule" p:pattern=".*" p:action="AVOID" />
+			</list>
+		</property>
+		<property name="timeFormat">
+			<ref bean="timeFormat"></ref>
+		</property>
+		<property name="pageListeners">
+			<list>
+				<ref bean="pageSaver" />
+			</list>
+		</property>
+		<property name="crawlHistory">
+			<ref bean="crawlHistory" />
+		</property>
+		<!-- add for topic specific crawler -->
+		<property name="topicCrawler" value="false"/>
+		<property name="topicCrawlHistory">
+			<ref bean="topicCrawlHistory" />
+		</property>
+	    <property name="topicWords">
+	      <list>
+	        <value>禽业公司</value>
+	        <value>火灾</value>
+	      </list>
+	    </property>
+	    <property name="pdfReporter">
+	    	<ref bean="pdfReporter"/>
+	    </property>
+	</bean>
+</beans>

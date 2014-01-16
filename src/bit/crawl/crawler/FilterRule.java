@@ -88,4 +88,21 @@ public class FilterRule {
 		}
 		return null;
 	}
+	
+	public Pattern replaceTimeFormat(String date){
+		Pattern pan = null;
+		for (Pattern p : this.patterns) {
+			String pstring = null;
+			pstring = p.toString();
+			System.out.println("********regex is" + p.toString());
+			if(pstring.contains("#aimStoreFormat#")){
+				pstring.replaceFirst("#aimStoreFormat#", date);
+System.out.println("**************replaced pattern content is " + pstring);
+				if(this.action.equals("STORE")){
+					pan = Pattern.compile(pstring);
+				}
+			}
+		}
+		return pan;
+	}
 }
