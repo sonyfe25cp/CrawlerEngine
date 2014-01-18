@@ -1,3 +1,5 @@
 /crawled-pages
 /build
 .svn
+bin/
+.DS_Store
