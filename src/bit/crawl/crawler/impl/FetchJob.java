@@ -89,7 +89,6 @@ public class FetchJob implements Runnable {
 	}
 
 	public void download() throws WontFetchException {
-System.out.println("进入download*************");
 		logger.debug("Downloading %s", pageInfo.getUrl());
 		HttpGet request = new HttpGet(pageInfo.getUrl());
 		request.setHeader("User-Agent", USER_AGENT);

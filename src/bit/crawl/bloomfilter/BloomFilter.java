@@ -45,9 +45,9 @@ public class BloomFilter<E> implements Serializable {
 	private BitSet bitset;
     private int bitSetSize;
     private double bitsPerElement;
-    private int expectedNumberOfFilterElements; // expected (maximum) number of elements to be added   最大可以添加的元素数
-    private int numberOfAddedElements; // number of elements actually added to the Bloom filter        已经添加的元素总数
-    private int k; // number of hash functions                                                         哈希函数数量
+    private int expectedNumberOfFilterElements; // expected (maximum) number of elements to be added
+    private int numberOfAddedElements; // number of elements actually added to the Bloom filter
+    private int k; // number of hash functions
 
     static final Charset charset = Charset.forName("UTF-8"); // encoding used for storing hash values as strings
 

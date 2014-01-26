@@ -87,8 +87,7 @@ public class CrawlHistory {
 	/**
 	 * import urls from mysql,then add to bloomFilter and serialize
 	 */
-	public ResultSet initBloomFilter()
-	{	
+	public ResultSet initBloomFilter(){	
 		ResultSet rs = null;
 		try {
 			conn = dataSource.getConnection();
@@ -109,19 +108,16 @@ public class CrawlHistory {
 	/**
 	 * load crawling history from database to the historySet
 	 */
-	public void loadHistory()
-	{		
+	public void loadHistory(){
 		try {
 			conn = dataSource.getConnection();
 			stmt = conn.createStatement();
 			
 			if(checkTableExistence() == false)
 				createTable();
-			else
-			{
+			else	{
 				ResultSet rs = stmt.executeQuery("SELECT * FROM " + tableName);
-				while(rs.next())
-				{
+				while(rs.next())	{
 					historySet.add(rs.getString("url"));
 				}
 				rs.close();
@@ -129,7 +125,6 @@ public class CrawlHistory {
 				conn.close();
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

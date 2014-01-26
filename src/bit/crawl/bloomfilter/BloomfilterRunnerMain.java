@@ -17,8 +17,6 @@ package bit.crawl.bloomfilter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-import bit.crawl.crawler.Crawler;
-
 
 /**
  * A (very) simple benchmark to evaluate the performance of the Bloom filter class.

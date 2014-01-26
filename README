@@ -2,6 +2,14 @@
 CrawlerEngine - 简单的爬虫
 ========================
 
+Version: 1.0.3
+1.增加对种子初始化的配置，支持begin，end标签
+2.增加对follow页面的timeformat的转换
+使用方法：
+	1.
+	2.
+
+
 Version : 1.0.2
 Description:使用Bloom Filter 进行url的去重判断，以大幅提高去重判断速度
 使用方法：

@@ -45,13 +45,12 @@ public class CrawlRunnerMain {
 		
 		//智联招聘
 		String taskFileName16 = "/home/sliver/workspace2/CrawlerEngine/real-world-tasks/newsgn-zhaopin.spring.xml";
-		String taskFileName17 = "/home/sliver/workspace2/CrawlerEngine/real-world-tasks/zhaopin-nanjing.spring.xml";
-		
+		String taskFileName17 = "/Users/omar/workspace/CrawlerEngine/real-world-tasks/zhaopin-beijing.spring.xml";
+		String taskFileName18 = "/Users/omar/workspace/CrawlerEngine/real-world-tasks/zhaopin-beijing-test.spring.xml";
 
 		ApplicationContext context = new FileSystemXmlApplicationContext("file:" + taskFileName17);
 		Crawler crawler = context.getBean("crawler", Crawler.class);
 		crawler.run();
-		
 	}
 
 }

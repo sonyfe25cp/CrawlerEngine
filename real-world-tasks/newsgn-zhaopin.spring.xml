@@ -14,7 +14,7 @@
 	<bean id="dataSource" class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
 		<property name="serverName" value="127.0.0.1" />
 		<property name="user" value="root" />
-		<property name="password" value="123iop" />
+		<property name="password" value="" />
 		<property name="databaseName" value="crawlhistory" />
 	</bean>
 

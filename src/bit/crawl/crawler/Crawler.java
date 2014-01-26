@@ -9,8 +9,6 @@ import java.io.ObjectOutputStream;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,13 +18,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-
 
 import bit.crawl.bloomfilter.BloomFilter;
 import bit.crawl.crawler.impl.FetchJob;
@@ -96,6 +92,9 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 	 * BloomFilter to check whether the element been added,if not add it
 	 */
 	private BloomFilter<String> bloomFilter = null;
+	
+	private String bloomPath;//单个bloomFilter文件地址
+	private boolean bloomFlag = true;
 	
 	/**
 	 * time format configure
@@ -255,8 +254,6 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 	/**
 	 * Add a PageListener to the internal listener list.
 	 * 
-	 * @author Kunshan Wang
-	 * 
 	 * @param listeer
 	 *            The PageListener to add;
 	 */
@@ -264,11 +261,39 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 		pageListeners.add(listener);
 	}
 
+	// 加载BloomFilter
+	private void bootBloomFilter(){
+		if(bloomPath == null || bloomPath.length() == 0){
+			this.bloomFlag = false;
+			return ;
+		}
+		FileInputStream fis = null;
+		try {
+			fis = new FileInputStream(bloomPath);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		ObjectInputStream ois = null;
+		try {
+			ois = new ObjectInputStream(fis);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			bloomFilter = (BloomFilter<String>) ois.readObject();
+			ois.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Start crawling, save pages in pageInfos. It will return when all
 	 * reachable pages are crawled.
-	 * 
-	 * @author Kunshan Wang
 	 */
 	public void run() {
 		try {
@@ -277,33 +302,13 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 			logger.info("Default charset:" + getEncoding());
 			logger.info("Loading crawl history");
 
-			// 加载BloomFilter
-			FileInputStream fis = null;
-			try {
-				fis = new FileInputStream("bloomFilter.bf");
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-
-			ObjectInputStream ois = null;
-			try {
-				ois = new ObjectInputStream(fis);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			try {
-				bloomFilter = (BloomFilter<String>) ois.readObject();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
+			//加载bf
+			bootBloomFilter();
 
 			// if(crawlHistory!=null){
-			// crawlHistory.loadHistory();
+			// 		crawlHistory.loadHistory();
 			// }
-			if (topicCrawler == true && topicCrawlHistory != null) {
+			if (topicCrawler && topicCrawlHistory != null) {
 				topicCrawlHistory.loadHistory();
 			}
 			executor = new ThreadPoolExecutor(getMaxThreads(), getMaxThreads(),
@@ -317,7 +322,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 			List<FilterRule> frs = new ArrayList<FilterRule>();
 			List<FilterRule> original = getFilterRules();
 			
-			if ((begin != 0) && (end != 0) && (begin < end)) {                          //通过begin/end配置抓取多日新闻
+			if ((begin != 0) && (end != 0) && (begin < end)) {//通过begin/end配置抓取多日新闻
 				for(int i = timeFormat.getBegin(); i <= timeFormat.getEnd(); i++){
 					for (String link : getInitialUrls()) {
 						if (link.matches("(.*)#(.*)#(.*)")) {
@@ -386,13 +391,12 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 						String followFormat = timeFormat.toFollowFormat(date);
 						timeFormat.setFollowTimeFormat(followFormat);
 					}
-					else{                                                 //规范形式，无需转换
+					else{//规范形式，无需转换
 						newInitialUrls.add(link);
 					}
 				}
 				
-	/////////////////////convert patterns
-				
+				//convert patterns
 				for (FilterRule fr : getFilterRules()) {
 					for (Pattern p : fr.getPatterns()) {
 						String pstring = null;
@@ -423,7 +427,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 					crawlHistory.addHistory();
 				}
 			}
-			if (topicCrawler == true && topicCrawlHistory != null) {
+			if (topicCrawler && topicCrawlHistory != null) {
 				if (!topicCrawlHistory.getBufferSet().isEmpty()) {
 					topicCrawlHistory.addHistory();
 				}
@@ -441,27 +445,30 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 			}
 		}
 		
-		//序列化输出bloomFilter
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream("bloomFilter.bf");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+		if(bloomFlag){
+			//序列化输出bloomFilter
+			FileOutputStream fos = null;
+			try {
+				fos = new FileOutputStream("bloomFilter.bf");
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+			ObjectOutputStream oos = null;
+			try {
+				oos = new ObjectOutputStream(fos);
+				oos.writeObject(bloomFilter);
+				oos.close();
+				logger.info("bloomFilter serialize successfully!!!");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
-		ObjectOutputStream oos = null;
-		try {
-			oos = new ObjectOutputStream(fos);
-			oos.writeObject(bloomFilter);
-			oos.close();
-			logger.info("bloomFilter serialize successfully!!!");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
 		logger.info("Crawling stopped.");
 		logger.info("Begin to generate the report.");
-		pdfReporter.report(topicWords, total, topicSpecific, pairs);
-		logger.info("Generete the report successfully.");
+		if(topicCrawler){
+			pdfReporter.report(topicWords, total, topicSpecific, pairs);
+			logger.info("Generete the report successfully.");
+		}
 	}
 ////////////////////////修改 201401100952 
 	private CrawlAction getFilterAction(String url) {
@@ -510,7 +517,8 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 			}
 
 			// add url to BloomFilter
-			bloomFilter.add(url);
+			if(bloomFlag)
+				bloomFilter.add(url);
 
 			if (topicCrawler) {// topic specify crawler mode
 				if (topicCrawlHistory != null) {

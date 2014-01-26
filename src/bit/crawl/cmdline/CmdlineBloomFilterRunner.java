@@ -20,9 +20,6 @@ public class CmdlineBloomFilterRunner {
 			BloomFilterInit bloomFilterInit = context.getBean("bloomFilterInit", BloomFilterInit.class);
 			bloomFilterInit.init();	
 		}
-		
-		
-
 	}
 
 }
