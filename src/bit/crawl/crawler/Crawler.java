@@ -42,6 +42,9 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 
 	private ThreadSafeClientConnManager connManager = new ThreadSafeClientConnManager();
 	private HttpClient httpClient = new DefaultHttpClient(connManager);
+	
+	
+	private static String BASICREFERURL = "http://www.baidu.com";
 
 	/**
 	 * The max number of threads to use.
@@ -238,7 +241,6 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 	/**
 	 * A bean-style empty constructor.
 	 * 
-	 * @author Kunshan Wang
 	 */
 	public Crawler() {
 	}
@@ -316,7 +318,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 			
 			int begin = timeFormat.getBegin();
 			int end = timeFormat.getEnd();
-			System.out.println("begin is : " + begin + ", end is : " + end);
+//			System.out.println("begin is : " + begin + ", end is : " + end);
 
 			List<String> newInitialUrls = new ArrayList<String>();
 			List<FilterRule> frs = new ArrayList<FilterRule>();
@@ -347,7 +349,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 								
 								String pstring = null;
 								pstring = p.toString();
-								System.out.println("********regex is " + pstring);
+//								System.out.println("********regex is " + pstring);
 								if (pstring.contains("#aimStoreFormat#")){
 									pstring = pstring.replaceFirst("#aimStoreFormat#", timeFormat.getStoreTimeFormat());
 									System.out.println("#######replaced pattern content is " + pstring);
@@ -356,7 +358,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 								}
 								else if (pstring.contains("#aimFollowFormat#")){
 									pstring = pstring.replaceFirst("#aimFollowFormat#", timeFormat.getFollowTimeFormat());
-									System.out.println("########replaced pattern content is " + pstring);
+//									System.out.println("########replaced pattern content is " + pstring);
 									fre.setPattern(Pattern.compile(pstring));
 									frs.add(fre);
 								}
@@ -374,9 +376,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 				}
 				
 				setFilterRules(frs);
-			}
-			else {  
-	//////////////新加///////////////////convert InitialUrls into standard format
+			}else{  //新加///////////////////convert InitialUrls into standard format
 				for(String link : getInitialUrls()){
 					if(link.matches("(.*)#\\d{8}#(.*)")){                //如果种子链接里包含#20140111#式样，进行url转换
 						String[] substring = link.split("#");
@@ -395,21 +395,20 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 						newInitialUrls.add(link);
 					}
 				}
-				
 				//convert patterns
 				for (FilterRule fr : getFilterRules()) {
 					for (Pattern p : fr.getPatterns()) {
 						String pstring = null;
 						pstring = p.toString();
-						System.out.println("********regex is " + p.toString());
+//						System.out.println("********regex is " + p.toString());
 						if (pstring.contains("#aimStoreFormat#")){
 							pstring = pstring.replaceFirst("#aimStoreFormat#", timeFormat.getStoreTimeFormat());
-							System.out.println("**************replaced pattern content is " + pstring);
+//							System.out.println("**************replaced pattern content is " + pstring);
 							fr.setPattern(Pattern.compile(pstring));
 						}
 						else if (pstring.contains("#aimFollowFormat#")){
 							pstring = pstring.replaceFirst("#aimFollowFormat#", timeFormat.getFollowTimeFormat());
-							System.out.println("**************replaced pattern content is " + pstring);
+//							System.out.println("**************replaced pattern content is " + pstring);
 							fr.setPattern(Pattern.compile(pstring));
 						}
 					}
@@ -418,9 +417,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 				//new FileRules after convert
 				setFilterRules(frs);
 			}
-							
-			reportLinks(newInitialUrls, 0);			
-			
+			reportLinks(newInitialUrls, 0, BASICREFERURL);			
 			latch.await();
 			if (crawlHistory != null) {
 				if (!crawlHistory.getBufferSet().isEmpty()) {
@@ -435,16 +432,11 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 
 		} catch (InterruptedException e) {
 			logger.info("Crawling interrupted.");
-			// Just let this thread be interrupted. Clean up in the finally
-			// clause.
 		} finally {
-			// The current thread may be interrupted. If that happens, we should
-			// terminate all threads in the executor.
 			if (executor != null) {
 				executor.shutdownNow();
 			}
 		}
-		
 		if(bloomFlag){
 			//序列化输出bloomFilter
 			FileOutputStream fos = null;
@@ -464,8 +456,8 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 			}
 		}
 		logger.info("Crawling stopped.");
-		logger.info("Begin to generate the report.");
 		if(topicCrawler){
+			logger.info("Begin to generate the report.");
 			pdfReporter.report(topicWords, total, topicSpecific, pairs);
 			logger.info("Generete the report successfully.");
 		}
@@ -479,8 +471,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 				return action;
 			}
 		}
-		logger.info("url:" + url + " --- action:"
-				+ (action == null ? "Follow" : action));
+		logger.info("url:" + url + " --- action:" + (action == null ? "Follow" : action));
 		return CrawlAction.FOLLOW;
 	}
 
@@ -488,7 +479,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 	public void reportPageFetched(PageInfo pageInfo) {
 		String url = pageInfo.getUrl();
 		total++;
-		if (getFilterAction(url) == CrawlAction.STORE) {
+		if (getFilterAction(url) == CrawlAction.STORE || getFilterAction(url) == CrawlAction.FOLLOW_STORE) {
 			boolean saveFlag = true;
 			if (topicCrawler) {// topic specify crawler mode
 				saveFlag = topicFilter(pageInfo);
@@ -538,11 +529,6 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 	private boolean topicFilter(PageInfo pageInfo) {
 		String content = pageInfo.getContent();
 		boolean flag = true;
-		// BlockExtractor be = new BlockExtractor();
-		// be.setReader(new StringReader(content));
-		// be.extract();
-		// String title = be.getTitle();
-		// content = be.getContent();
 		SimpleHtmlExtractor she = new SimpleHtmlExtractor();
 		she.setReader(new StringReader(content));
 		she.extract();
@@ -561,7 +547,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 	}
 
 	@Override
-	public void reportLinks(List<String> urls, int newDistance) {
+	public void reportLinks(List<String> urls, int newDistance, String url) {
 		if (newDistance >= getMaxDepth()) {
 			logger.debug("Distance %d too far away.  Do not add.", newDistance);
 			return;
@@ -596,6 +582,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 				dispatched.add(link);
 				PageInfo pageInfo = new PageInfo();
 				pageInfo.setUrl(link);
+				pageInfo.setReferURL(url);
 				pageInfo.setDistance(newDistance);
 				pageInfo.setCrawlFlag(getFilterAction(link));
 				try {

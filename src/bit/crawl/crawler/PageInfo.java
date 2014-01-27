@@ -6,8 +6,6 @@ import java.util.*;
  * Saving informatins about a web page, including its URL, its full contents,
  * all links, etc.
  * 
- * @author Kunshan Wang
- * 
  */
 public class PageInfo {
 	/**
@@ -19,6 +17,7 @@ public class PageInfo {
 	 * The URL.
 	 */
 	private String url = null;
+	private String referURL = null;//the refer information of this url
 	
 	/**
 	 * The HTTP headers.
@@ -32,7 +31,8 @@ public class PageInfo {
 	private Date lastResponded;
 	private Integer crawlStatus;
 	
-	private CrawlAction crawlFlag;//add by chenjie ,avoid to add distance when crawler just crawl the follow page
+	private CrawlAction crawlFlag;//avoid to add distance when crawler just crawl the follow page
+	
 	
 	/**
 	 * The raw (un-decoded) contents.
@@ -144,6 +144,14 @@ public class PageInfo {
 
 	public void setCrawlFlag(CrawlAction crawlFlag) {
 		this.crawlFlag = crawlFlag;
+	}
+
+	public String getReferURL() {
+		return referURL;
+	}
+
+	public void setReferURL(String referURL) {
+		this.referURL = referURL;
 	}
 
 }

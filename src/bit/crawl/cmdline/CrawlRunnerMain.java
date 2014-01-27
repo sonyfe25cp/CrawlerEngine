@@ -47,8 +47,9 @@ public class CrawlRunnerMain {
 		String taskFileName16 = "/home/sliver/workspace2/CrawlerEngine/real-world-tasks/newsgn-zhaopin.spring.xml";
 		String taskFileName17 = "/Users/omar/workspace/CrawlerEngine/real-world-tasks/zhaopin-beijing.spring.xml";
 		String taskFileName18 = "/Users/omar/workspace/CrawlerEngine/real-world-tasks/zhaopin-beijing-test.spring.xml";
+		String taskFileName19 = "/Users/omar/workspace/CrawlerEngine/real-world-tasks/zhaopin-ali.spring.xml";
 
-		ApplicationContext context = new FileSystemXmlApplicationContext("file:" + taskFileName17);
+		ApplicationContext context = new FileSystemXmlApplicationContext("file:" + taskFileName19);
 		Crawler crawler = context.getBean("crawler", Crawler.class);
 		crawler.run();
 	}

@@ -28,7 +28,7 @@ import bit.crawl.util.SlurpUtils;
 
 public class FetchJob implements Runnable {
 	private static final Logger logger = new Logger();
-	private static final String USER_AGENT = "BITCrawler/0.1";
+	private static final String USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:26.0) Gecko/20100101 Firefox/26.0";
 	private static final long MAX_READ_SIZE = 1048576;
 
 	private HttpClient httpClient;
@@ -74,10 +74,10 @@ public class FetchJob implements Runnable {
 			}
 			if(pageInfo.getCrawlFlag() == CrawlAction.FOLLOW){
 				logger.info("url:"+url+" ----------------follow");
-				crawler.reportLinks(pageInfo.getLinks(), distance);
+				crawler.reportLinks(pageInfo.getLinks(), distance, url);
 			}else{
 				logger.info("url:"+url+" ----------------store");
-				crawler.reportLinks(pageInfo.getLinks(), distance+1);
+				crawler.reportLinks(pageInfo.getLinks(), distance+1, url);
 			}
 		} catch (WontFetchException e) {
 			logger.info("Won't fetch " + url);
@@ -92,8 +92,10 @@ public class FetchJob implements Runnable {
 		logger.debug("Downloading %s", pageInfo.getUrl());
 		HttpGet request = new HttpGet(pageInfo.getUrl());
 		request.setHeader("User-Agent", USER_AGENT);
+		request.setHeader("Referer", pageInfo.getReferURL());
 		HttpResponse response;
 		try {
+			
 			response = getHttpClient().execute(request);
 		} catch (IOException e) {
 			logger.info("Error communicating to server: " + pageInfo.getUrl());
@@ -104,16 +106,15 @@ public class FetchJob implements Runnable {
 		pageInfo.setHttpStatus(statusCode);
 
 		if (statusCode == HttpStatus.SC_NOT_MODIFIED) {
-			// TODO: handle caching
+			
 		} else if (statusCode != HttpStatus.SC_OK) {
-			// TODO: handle other non-OK statuses
+			
 		}
 
 		for (Header header : response.getAllHeaders()) {
 			String name = header.getName();
 			String value = header.getValue();
 			pageInfo.getHeaders().put(name, value);
-			// TODO: handle duplicated headers.
 		}
 
 		String contentType = pageInfo.getHeaders().get("Content-Type");
@@ -220,7 +221,7 @@ public class FetchJob implements Runnable {
 				URI linkUri = uri.resolve(linkHref);
 				pageInfo.getLinks().add(linkUri.toString());
 			} catch (Exception e) {
-				// Ignore illegal links.
+				
 			}
 		}
 
