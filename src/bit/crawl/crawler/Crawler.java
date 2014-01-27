@@ -306,12 +306,13 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 
 			//加载bf
 			bootBloomFilter();
-
-			// if(crawlHistory!=null){
-			// 		crawlHistory.loadHistory();
-			// }
-			if (topicCrawler && topicCrawlHistory != null) {
-				topicCrawlHistory.loadHistory();
+			if(!bloomFlag){
+				if(crawlHistory!=null){
+					crawlHistory.loadHistory();
+				}
+				if (topicCrawler && topicCrawlHistory != null) {
+					topicCrawlHistory.loadHistory();
+				}
 			}
 			executor = new ThreadPoolExecutor(getMaxThreads(), getMaxThreads(),
 					0, TimeUnit.SECONDS, workQueue);
@@ -429,7 +430,6 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 					topicCrawlHistory.addHistory();
 				}
 			}
-
 		} catch (InterruptedException e) {
 			logger.info("Crawling interrupted.");
 		} finally {
@@ -559,13 +559,12 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 					logger.debug(String.format("Discard dispatched link %s", link));
 					continue;
 				}
-				// if(crawlHistory!=null){
-				// if(crawlHistory.getHistorySet().contains(link)) {
-				// logger.info("some day already crawled this link:"+link);
-				// continue;
-				// }
-				// }
-
+				 if(crawlHistory!=null){
+					 if(crawlHistory.getHistorySet().contains(link)) {
+					 logger.info("some day already crawled this link:"+link);
+					 continue;
+					 }
+				 }
 				if (bloomFilter != null) {
 					if (bloomFilter.contains(link)) {
 						logger.info("Someday already crawled this link:" + link);

@@ -29,7 +29,7 @@ import bit.crawl.util.SlurpUtils;
 public class FetchJob implements Runnable {
 	private static final Logger logger = new Logger();
 	private static final String USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:26.0) Gecko/20100101 Firefox/26.0";
-	private static final long MAX_READ_SIZE = 1048576;
+	private static final int MAX_READ_SIZE = 1048576;
 
 	private HttpClient httpClient;
 	private ICrawlerForWorker crawler;
@@ -101,16 +101,13 @@ public class FetchJob implements Runnable {
 			logger.info("Error communicating to server: " + pageInfo.getUrl());
 			throw new WontFetchException();
 		}
-
 		int statusCode = response.getStatusLine().getStatusCode();
 		pageInfo.setHttpStatus(statusCode);
-
 		if (statusCode == HttpStatus.SC_NOT_MODIFIED) {
 			
 		} else if (statusCode != HttpStatus.SC_OK) {
 			
 		}
-
 		for (Header header : response.getAllHeaders()) {
 			String name = header.getName();
 			String value = header.getValue();
@@ -136,8 +133,7 @@ public class FetchJob implements Runnable {
 
 		byte[] rawContent = null;
 		try {
-			rawContent = SlurpUtils
-					.toByteArrayWithLimit(content, MAX_READ_SIZE);
+			rawContent = SlurpUtils.toByteArrayWithLimit(content, MAX_READ_SIZE);
 			EntityUtils.consume(entity);
 		} catch (IOException e) {
 			// pass silently.
