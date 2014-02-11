@@ -91,6 +91,10 @@ public class CrawlHistory {
 		ResultSet rs = null;
 		try {
 			conn = dataSource.getConnection();
+			if(conn == null || conn.isClosed()){
+			    System.err.println("数据库没有启动，程序自动终止.");
+			    System.exit(0);
+			}
 			stmt = conn.createStatement();
 			
 			if(checkTableExistence() == false)
@@ -101,6 +105,8 @@ public class CrawlHistory {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+			System.err.println("数据库没有启动，程序自动终止.");
+            System.exit(0);
 		}
 		return rs;
 	}
@@ -126,6 +132,8 @@ public class CrawlHistory {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+			 System.err.println("数据库没有启动，程序自动终止.");
+             System.exit(0);
 		}
 	}
 	
@@ -150,10 +158,10 @@ public class CrawlHistory {
 			stmt.close();
 			conn.close();
 			
-			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			 System.err.println("数据库没有启动，程序自动终止.");
+             System.exit(0);
 		}
 		bufferSet.clear();
 	}

@@ -9,8 +9,8 @@ destroy-method="close">
 <property name="baseDir" value="crawled-pages" />
 </bean><!-- mysql database -->
 <bean id="dataSource" class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
-<property name="serverName" value="127.0.0.1" />
-<property name="user" value="root" />
+<property name="serverName" value="192.168.1.251" />
+<property name="user" value="work" />
 <property name="password" value="" />
 <property name="databaseName" value="crawlhistory" />
 </bean>
