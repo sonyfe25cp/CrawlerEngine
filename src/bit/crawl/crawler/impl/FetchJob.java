@@ -93,6 +93,9 @@ public class FetchJob implements Runnable {
 		HttpGet request = new HttpGet(pageInfo.getUrl());
 		request.setHeader("User-Agent", USER_AGENT);
 		request.setHeader("Referer", pageInfo.getReferURL());
+		request.setHeader("Accept-Encoding", "gzip");
+		request.setHeader("Connection", "keep-alive");
+
 		HttpResponse response;
 		try {
 			
