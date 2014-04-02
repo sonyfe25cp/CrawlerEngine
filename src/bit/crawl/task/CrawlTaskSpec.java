@@ -1,21 +1,21 @@
 package bit.crawl.task;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
-import bit.crawl.crawler.*;
-import bit.crawl.extractor.*;
+
+import bit.crawl.crawler.CrawlAction;
+import bit.crawl.crawler.FilterRule;
+import bit.crawl.crawler.SiteConfig;
 
 public class CrawlTaskSpec {
 	private String taskName;
 	private String baseDir;
-	private int maxThreads;
 	private int maxDepth;
 	private String encoding;
 	private List<String> initialUrls = new ArrayList<String>();
 	private List<SiteConfig> siteConfigs = new ArrayList<SiteConfig>();
 	private List<FilterRule> filterRules = new ArrayList<FilterRule>();
-
-	private List<Extractor> pageExtractors = new ArrayList<Extractor>();
 
 	public String getTaskName() {
 		return taskName;
@@ -31,14 +31,6 @@ public class CrawlTaskSpec {
 
 	public void setBaseDir(String baseDir) {
 		this.baseDir = baseDir;
-	}
-
-	public int getMaxThreads() {
-		return maxThreads;
-	}
-
-	public void setMaxThreads(int maxThreads) {
-		this.maxThreads = maxThreads;
 	}
 
 	public int getMaxDepth() {
@@ -81,14 +73,6 @@ public class CrawlTaskSpec {
 		this.filterRules = filterRules;
 	}
 
-	public List<Extractor> getPageExtractors() {
-		return pageExtractors;
-	}
-
-	public void setPageExtractors(List<Extractor> pageExtractors) {
-		this.pageExtractors = pageExtractors;
-	}
-
 	public void addInitialUrl(String url) {
 		this.initialUrls.add(url);
 	}
@@ -112,31 +96,23 @@ public class CrawlTaskSpec {
 		this.filterRules.add(new FilterRule(Pattern.compile(pattern), negative,
 				CrawlAction.valueOf(action)));
 	}
-	
-	public void addPageExtractor(Extractor pageExtractor) {
-		this.pageExtractors.add(pageExtractor);
-	}
-	
-	
+
 	public CrawlTaskSpec() {
 		super();
 	}
-	
-	
+
 	public CrawlTask createCrawlTask() {
 		CrawlTask crawlTask = new CrawlTask();
-		
+
 		crawlTask.setTaskName(taskName);
 		crawlTask.setBaseDir(baseDir);
 
-		crawlTask.setMaxThreads(maxThreads);
 		crawlTask.setMaxDepth(maxDepth);
 		crawlTask.setEncoding(encoding);
 		crawlTask.getInitialUrls().addAll(initialUrls);
 		crawlTask.getSiteConfigs().addAll(siteConfigs);
 		crawlTask.getFilterRules().addAll(filterRules);
-		
-		
+
 		return crawlTask;
 	}
 }

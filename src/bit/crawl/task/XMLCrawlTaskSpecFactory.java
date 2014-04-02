@@ -1,11 +1,14 @@
 package bit.crawl.task;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
 import org.apache.commons.digester.Digester;
 
 import bit.crawl.crawler.SiteConfig;
-import bit.crawl.extractor.Extractor;
 
 /**
  * Loads CrawlTaskSpec objects from XML files.
@@ -63,19 +66,5 @@ public class XMLCrawlTaskSpecFactory {
 		d.addCallParam("crawl-task/filter-rules/rule", 1, "negative");
 		d.addCallParam("crawl-task/filter-rules/rule", 2, "action");
 
-		d.addObjectCreate("crawl-task/page-extractors/page-extractor",
-				Extractor.class);
-		d.addSetNext("crawl-task/page-extractors/page-extractor",
-				"addPageExtractor");
-		d.addCallMethod("crawl-task/page-extractors/page-extractor/url-pattern", "setUrlPattern", 0);
-		d.addCallMethod("crawl-task/page-extractors/page-extractor/rules/rule",
-				"addRule", 3, new Class<?>[] { String.class, String.class,
-						boolean.class });
-		d.addCallParam("crawl-task/page-extractors/page-extractor/rules/rule",
-				0, "name");
-		d.addCallParam("crawl-task/page-extractors/page-extractor/rules/rule",
-				1);
-		d.addCallParam("crawl-task/page-extractors/page-extractor/rules/rule",
-				2, "html-cleanup");
 	}
 }

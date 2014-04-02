@@ -1,11 +1,11 @@
 package bit.crawl.crawler.impl;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -13,15 +13,17 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.htmlparser.Node;
-import org.htmlparser.Parser;
-import org.htmlparser.filters.TagNameFilter;
-import org.htmlparser.tags.LinkTag;
-import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import bit.crawl.crawler.CrawlAction;
+import bit.crawl.crawler.Crawler;
+import bit.crawl.crawler.FilterRule;
 import bit.crawl.crawler.PageInfo;
 import bit.crawl.util.Logger;
 import bit.crawl.util.SlurpUtils;
@@ -31,21 +33,11 @@ public class FetchJob implements Runnable {
 	private static final String USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:26.0) Gecko/20100101 Firefox/26.0";
 	private static final int MAX_READ_SIZE = 1048576;
 
-	private HttpClient httpClient;
-	private ICrawlerForWorker crawler;
+	private Crawler crawler;
 	private PageInfo pageInfo;
+	private HttpClient httpClient = new DefaultHttpClient();
 
-	public HttpClient getHttpClient() {
-		return httpClient;
-	}
-
-	public void setHttpClient(HttpClient httpClient) {
-		this.httpClient = httpClient;
-	}
-
-	public FetchJob(HttpClient httpClient, PageInfo pageInfo,
-			ICrawlerForWorker crawler) {
-		this.httpClient = httpClient;
+	public FetchJob(PageInfo pageInfo, Crawler crawler) {
 		this.pageInfo = pageInfo;
 		this.crawler = crawler;
 	}
@@ -57,27 +49,15 @@ public class FetchJob implements Runnable {
 		logger.info("Crawling " + url.toString());
 		try {
 			download();
-			if (Thread.interrupted()) {
-				return;
-			}
 			decode();
-			if (Thread.interrupted()) {
-				return;
-			}
-			extractLinks();//抽取链接
-			if (Thread.interrupted()) {
-				return;
-			}
-			crawler.reportPageFetched(pageInfo);//保存需要store的
-			if (Thread.interrupted()) {
-				return;
-			}
-			if(pageInfo.getCrawlFlag() == CrawlAction.FOLLOW){
-				logger.info("url:"+url+" ----------------follow");
+			extractLinks();// 抽取链接
+			crawler.reportPageFetched(pageInfo);// 保存需要store的
+			if (pageInfo.getCrawlFlag() == CrawlAction.FOLLOW) {
+				logger.info("url:" + url + " ----------------follow");
 				crawler.reportLinks(pageInfo.getLinks(), distance, url);
-			}else{
-				logger.info("url:"+url+" ----------------store");
-				crawler.reportLinks(pageInfo.getLinks(), distance+1, url);
+			} else if(pageInfo.getCrawlFlag() == CrawlAction.STORE){
+				logger.info("url:" + url + " ----------------store");
+				crawler.reportLinks(pageInfo.getLinks(), distance + 1, url);
 			}
 		} catch (WontFetchException e) {
 			logger.info("Won't fetch " + url);
@@ -98,8 +78,8 @@ public class FetchJob implements Runnable {
 
 		HttpResponse response;
 		try {
-			
-			response = getHttpClient().execute(request);
+
+			response = httpClient.execute(request);
 		} catch (IOException e) {
 			logger.info("Error communicating to server: " + pageInfo.getUrl());
 			throw new WontFetchException();
@@ -107,9 +87,9 @@ public class FetchJob implements Runnable {
 		int statusCode = response.getStatusLine().getStatusCode();
 		pageInfo.setHttpStatus(statusCode);
 		if (statusCode == HttpStatus.SC_NOT_MODIFIED) {
-			
+
 		} else if (statusCode != HttpStatus.SC_OK) {
-			
+
 		}
 		for (Header header : response.getAllHeaders()) {
 			String name = header.getName();
@@ -126,9 +106,9 @@ public class FetchJob implements Runnable {
 		}
 
 		HttpEntity entity = response.getEntity();
-		InputStream content;
+		GZIPInputStream content;
 		try {
-			content = entity.getContent();
+			content = new GZIPInputStream(entity.getContent());
 		} catch (Exception e) {
 			logger.info("Cannot open content stream: " + pageInfo.getUrl());
 			throw new WontFetchException();
@@ -136,7 +116,8 @@ public class FetchJob implements Runnable {
 
 		byte[] rawContent = null;
 		try {
-			rawContent = SlurpUtils.toByteArrayWithLimit(content, MAX_READ_SIZE);
+			rawContent = SlurpUtils
+					.toByteArrayWithLimit(content, MAX_READ_SIZE);
 			EntityUtils.consume(entity);
 		} catch (IOException e) {
 			// pass silently.
@@ -156,7 +137,7 @@ public class FetchJob implements Runnable {
 					"<\\?xml.*?encoding\\s*=\\s*['\"]?([a-zA-Z0-9_\\-]+)['\"]?.*?\\?>",
 					Pattern.CASE_INSENSITIVE), };
 
-	private static final Pattern headerCharsetPattern = Pattern
+	static final Pattern headerCharsetPattern = Pattern
 			.compile("charset=([a-zA-Z0-9_\\-]+)");
 
 	public void decode() {
@@ -176,7 +157,6 @@ public class FetchJob implements Runnable {
 				pageCharset = Charset.forName(pageCharsetName);
 			}
 		}
-
 		if (pageCharset == null) {
 			String contentType = pageInfo.getHeaders().get("Content-Type");
 			if (contentType != null) {
@@ -202,27 +182,58 @@ public class FetchJob implements Runnable {
 
 	}
 
+	static Pattern scriptPattern = Pattern.compile("<script>.*</script>");
+
+	String clean(String html) {
+		html = html.replaceAll("<script>.*</script>", "");
+		return html;
+	}
+
 	public void extractLinks() throws ParserException, URISyntaxException {
 		logger.debug("Extracting links " + pageInfo.getUrl());
 		String content = pageInfo.getContent();
-		URI uri = new URI(pageInfo.getUrl());
+//		URI uri = new URI(pageInfo.getUrl());
 
-		Parser parser = new Parser();
-		parser.setInputHTML(content);
-		NodeList nodeList = parser.parse(new TagNameFilter("A"));
-
-		for (int i = 0; i < nodeList.size(); i++) {
-			Node node = nodeList.elementAt(i);
-
-			LinkTag tag = (LinkTag) node;
-			String linkHref = tag.extractLink();
-			try {
-				URI linkUri = uri.resolve(linkHref);
-				pageInfo.getLinks().add(linkUri.toString());
-			} catch (Exception e) {
-				
+		// Parser parser = new Parser();
+		// parser.setInputHTML(content);
+		Document doc = Jsoup.parse(content);
+		// doc.select("script").remove();
+		// String html = doc.html();
+		// if(html.contains("script")){
+		// logger.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		// }
+		Elements as = doc.select("a");
+		for (Element a : as) {
+			String link = a.attr("href");
+			for (FilterRule fr : crawler.getFilterRules()) {
+				CrawlAction ca = fr.judge(link);
+				if (ca != CrawlAction.AVOID) {
+					pageInfo.getLinks().add(link);
+				}
 			}
 		}
+		// NodeList nodeList = parser.parse(new TagNameFilter("A"));
+		// logger.info("get links from " + pageInfo.getUrl()+" size : " +
+		// nodeList.size());
+		// for (int i = 0; i < nodeList.size(); i++) {
+		// Node node = nodeList.elementAt(i);
+		//
+		// LinkTag tag = (LinkTag) node;
+		// String linkHref = tag.extractLink();
+		// try {
+		// URI linkUri = uri.resolve(linkHref);
+		// String link = linkUri.toString();
+
+//		for (FilterRule fr : crawler.getFilterRules()) {
+//			CrawlAction ca = fr.judge(link);
+//			if (ca != CrawlAction.AVOID) {
+//				pageInfo.getLinks().add(linkUri.toString());
+//			}
+//		}
+		// } catch (Exception e) {
+		// logger.error("extract error : {}", e);
+		// }
+		// }
 
 	}
 

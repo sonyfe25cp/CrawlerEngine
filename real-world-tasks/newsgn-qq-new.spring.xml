@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+ 	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<bean id="pageSaver" class="bit.crawl.pagesavers.PageStorePageSaver"
+		destroy-method="close">
+		<property name="taskName" value="newsgn_qq2" />
+		<property name="baseDir" value="crawled-pages" />
+	</bean>
+
+	<!-- mysql database -->
+	<bean id="dataSource" class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">
+		<property name="serverName" value="127.0.0.1" />
+		<property name="user" value="root" />
+		<property name="password" value="123iop" />
+		<property name="databaseName" value="crawlhistory" />
+	</bean>
+  <bean id="crawlHistory" class="bit.crawl.crawler.CrawlHistory">
+    <property name="dataSource" ref="dataSource" />
+    <property name="tableName" value="newsgn_qq_test1" />
+    <property name="bufferSize" value="100" />
+  </bean>
+
+	<bean id="crawler" class="bit.crawl.crawler.Crawler">
+		<property name="singleThread" value="false" />
+		<property name="maxDepth" value="3" />
+		<property name="encoding" value="GB2312" />
+		<property name="initialUrls">
+			<list>
+		        <!-- 国内新闻 -->
+		        <value>http://news.qq.com/newsgn/gdxw/gedixinwen.htm</value>
+		        <value>http://news.qq.com/newsgn/gdxw/gedixinwen_2.htm</value>
+			</list>
+		</property>
+		<property name="filterRules">
+			<list>
+		        <!-- 新闻内容 -->
+		        <!-- <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/2012[0-9]+/[0-9]+.htm" p:action="STORE" /> -->
+		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/a/201404[0-9]+/[0-9]+.htm" p:action="STORE" />
+		        <!-- 翻页-->
+		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/newsgn/gdxw/gedixinwen.htm" p:action="FOLLOW" />
+		        <bean class="bit.crawl.crawler.FilterRule" p:pattern="http://news.qq.com/newsgn/gdxw/gedixinwen_[0-9]+.htm" p:action="FOLLOW" />
+				<bean class="bit.crawl.crawler.FilterRule" p:pattern=".*" p:action="AVOID" />
+			</list>
+		</property>
+		<property name="pageListeners">
+			<list>
+				<ref bean="pageSaver" />
+			</list>
+		</property>
+		<property name="crawlHistory">
+			<ref bean="crawlHistory" />
+		</property>
+		<!-- add for topic specific crawler -->
+		<property name="topicCrawler" value="false"/>
+	</bean>
+</beans>
+
