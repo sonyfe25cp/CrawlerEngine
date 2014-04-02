@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -377,6 +378,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 		return newInitialUrls;
 	}
 
+	Vector<String> urlsNeedCrawl = new Vector<>();
 	/**
 	 * Start crawling, save pages in pageInfos. It will return when all
 	 * reachable pages are crawled.
@@ -403,14 +405,17 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 				cpu = Runtime.getRuntime().availableProcessors();
 			}
 			executor = new ThreadPoolExecutor(cpu, cpu, 1, TimeUnit.SECONDS,
-					new LinkedBlockingQueue<Runnable>(cpu * 8));
+					new LinkedBlockingQueue<Runnable>(cpu * 8), new ThreadPoolExecutor.CallerRunsPolicy());
 
 			List<String> newInitialUrls = resetInitialUrls();
 			logger.info("initurl.size : {}", newInitialUrls.size());
+			urlsNeedCrawl.addAll(newInitialUrls);
 
-			reportLinks(newInitialUrls, 0, BASICREFERURL);
+			reportLinks(urlsNeedCrawl, 0, BASICREFERURL);
 
 			latch.await();
+			
+			logger.info("保存抓取结果ing......");
 			
 			if (crawlHistory != null) {
 				if (!crawlHistory.getBufferSet().isEmpty()) {
@@ -454,8 +459,7 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 				return action;
 			}
 		}
-		logger.info("url:" + url + " --- action:"
-				+ (action == null ? "Follow" : action));
+		logger.debug("url:" + url + " --- action:" + (action == null ? "Follow" : action));
 		return CrawlAction.FOLLOW;
 	}
 
@@ -540,9 +544,6 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 
 		synchronized (dispatched) {
 			for (String link : urls) {
-				if (link.equals("http://news.qq.com/a/20140320/007377.htm")) {
-					logger.info("aa");
-				}
 				if (dispatched.contains(link)) {// 已抓过??
 					logger.debug(String.format("Discard dispatched link %s",
 							link));
@@ -550,14 +551,13 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 				}
 				if (crawlHistory != null) {
 					if (crawlHistory.getHistorySet().contains(link)) {
-						logger.info("some day already crawled this link:"
-								+ link);
+						logger.debug("some day already crawled this link:"+ link);
 						continue;
 					}
 				}
 				if (bloomFilter != null) {
 					if (bloomFilter.contains(link)) {
-						logger.info("Someday already crawled this link:" + link);
+						logger.debug("Someday already crawled this link:" + link);
 						continue;
 					}
 				}
@@ -566,23 +566,18 @@ public class Crawler implements Runnable, ICrawlerForWorker {
 					continue;
 				}
 
-				logger.debug(String.format("Add link %s", link));
 				latch.countUp();
 				dispatched.add(link);
-				// logger.info(dispatched.size() +
-				// " --------------- dispatched size ----");
 				PageInfo pageInfo = new PageInfo();
 				pageInfo.setUrl(link);
 				pageInfo.setReferURL(url);
 				pageInfo.setDistance(newDistance);
 				pageInfo.setCrawlFlag(getFilterAction(link));
 				try {
-					// executor.execute(new FetchJob(pageInfo, this));
-					// executor.submit(new FetchJob(httpClient, pageInfo,
-					// this));
 					executor.submit(new FetchJob(pageInfo, this));
 				} catch (RejectedExecutionException e) {
-					// executor is shutdown. do nothing.
+					logger.error("what ? ");
+					e.printStackTrace();
 				}
 			}
 		}

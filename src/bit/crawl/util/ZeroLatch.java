@@ -40,4 +40,8 @@ public class ZeroLatch {
 		this.notifyAll();
 	}
 
+	public int getCount() {
+		return count;
+	}
+
 }

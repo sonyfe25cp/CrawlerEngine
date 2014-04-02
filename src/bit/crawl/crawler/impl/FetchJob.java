@@ -44,25 +44,26 @@ public class FetchJob implements Runnable {
 
 	public void run() {
 		String url = pageInfo.getUrl();
-		int distance = pageInfo.getDistance();
-
-		logger.info("Crawling " + url.toString());
 		try {
+			int distance = pageInfo.getDistance();
+			logger.info("Crawling " + url.toString());
 			download();
 			decode();
 			extractLinks();// 抽取链接
 			crawler.reportPageFetched(pageInfo);// 保存需要store的
 			if (pageInfo.getCrawlFlag() == CrawlAction.FOLLOW) {
-				logger.info("url:" + url + " ----------------follow");
+				logger.debug("url:" + url + " ----------------follow");
 				crawler.reportLinks(pageInfo.getLinks(), distance, url);
 			} else if(pageInfo.getCrawlFlag() == CrawlAction.STORE){
-				logger.info("url:" + url + " ----------------store");
+				logger.debug("url:" + url + " ----------------store");
 				crawler.reportLinks(pageInfo.getLinks(), distance + 1, url);
 			}
 		} catch (WontFetchException e) {
-			logger.info("Won't fetch " + url);
+			logger.error("Won't fetch " + url);
+			e.printStackTrace();
 		} catch (Exception e) {
 			logger.error("Error crawling %s", e, url);
+			e.printStackTrace();
 		} finally {
 			crawler.reportJobDone();
 		}
@@ -81,7 +82,7 @@ public class FetchJob implements Runnable {
 
 			response = httpClient.execute(request);
 		} catch (IOException e) {
-			logger.info("Error communicating to server: " + pageInfo.getUrl());
+			logger.error("Error communicating to server: " + pageInfo.getUrl());
 			throw new WontFetchException();
 		}
 		int statusCode = response.getStatusLine().getStatusCode();
@@ -101,7 +102,7 @@ public class FetchJob implements Runnable {
 		if (contentType != null
 				&& !contentType
 						.matches("(application|text)/(xml|xhtml|html)(\\s*;.*)?")) {
-			logger.info("Wrong content type: " + contentType);
+			logger.error("Wrong content type: " + contentType);
 			throw new WontFetchException();
 		}
 
@@ -110,7 +111,7 @@ public class FetchJob implements Runnable {
 		try {
 			content = new GZIPInputStream(entity.getContent());
 		} catch (Exception e) {
-			logger.info("Cannot open content stream: " + pageInfo.getUrl());
+			logger.error("Cannot open content stream: " + pageInfo.getUrl());
 			throw new WontFetchException();
 		}
 

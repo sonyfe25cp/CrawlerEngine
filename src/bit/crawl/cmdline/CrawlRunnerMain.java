@@ -54,6 +54,5 @@ public class CrawlRunnerMain {
 				"file:" + taskFileName20);
 		Crawler crawler = context.getBean("crawler", Crawler.class);
 		crawler.run();
-		System.out.println("a");
 	}
 }
