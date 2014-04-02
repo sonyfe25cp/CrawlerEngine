@@ -1,6 +1,7 @@
 package bit.crawl.crawler.impl;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.regex.Matcher;
@@ -15,11 +16,14 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.htmlparser.Node;
+import org.htmlparser.Parser;
+import org.htmlparser.filters.TagNameFilter;
+import org.htmlparser.tags.LinkTag;
+import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import bit.crawl.crawler.CrawlAction;
 import bit.crawl.crawler.Crawler;
@@ -54,7 +58,7 @@ public class FetchJob implements Runnable {
 			if (pageInfo.getCrawlFlag() == CrawlAction.FOLLOW) {
 				logger.debug("url:" + url + " ----------------follow");
 				crawler.reportLinks(pageInfo.getLinks(), distance, url);
-			} else if(pageInfo.getCrawlFlag() == CrawlAction.STORE){
+			} else if (pageInfo.getCrawlFlag() == CrawlAction.STORE) {
 				logger.debug("url:" + url + " ----------------store");
 				crawler.reportLinks(pageInfo.getLinks(), distance + 1, url);
 			}
@@ -190,51 +194,48 @@ public class FetchJob implements Runnable {
 		return html;
 	}
 
-	public void extractLinks() throws ParserException, URISyntaxException {
+	public void extractLinks() throws Exception {
 		logger.debug("Extracting links " + pageInfo.getUrl());
 		String content = pageInfo.getContent();
-//		URI uri = new URI(pageInfo.getUrl());
+		URI uri = new URI(pageInfo.getUrl());
 
-		// Parser parser = new Parser();
-		// parser.setInputHTML(content);
-		Document doc = Jsoup.parse(content);
+//		Document doc = Jsoup.parse(content);
 		// doc.select("script").remove();
 		// String html = doc.html();
 		// if(html.contains("script")){
 		// logger.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		// }
-		Elements as = doc.select("a");
-		for (Element a : as) {
-			String link = a.attr("href");
+		// Elements as = doc.select("a");
+		// for (Element a : as) {
+		// String link = a.attr("href");
+		// for (FilterRule fr : crawler.getFilterRules()) {
+		// CrawlAction ca = fr.judge(link);
+		// if (ca != CrawlAction.AVOID) {
+		// pageInfo.getLinks().add(link);
+		// }
+		// }
+		// }
+		Parser parser = new Parser();
+		parser.setInputHTML(content);
+		NodeList nodeList = parser.parse(new TagNameFilter("A"));
+		logger.debug("get links from " + pageInfo.getUrl() + " size : "	+ nodeList.size());
+		for (int i = 0; i < nodeList.size(); i++) {
+			Node node = nodeList.elementAt(i);
+
+			LinkTag tag = (LinkTag) node;
+			String linkHref = tag.extractLink();
+			if (linkHref.indexOf("http") != linkHref.lastIndexOf("http")) {
+				continue;
+			}
+			URI linkUri = uri.resolve(linkHref);
+			String link = linkUri.toString();
 			for (FilterRule fr : crawler.getFilterRules()) {
 				CrawlAction ca = fr.judge(link);
 				if (ca != CrawlAction.AVOID) {
-					pageInfo.getLinks().add(link);
+					pageInfo.getLinks().add(linkUri.toString());
 				}
 			}
 		}
-		// NodeList nodeList = parser.parse(new TagNameFilter("A"));
-		// logger.info("get links from " + pageInfo.getUrl()+" size : " +
-		// nodeList.size());
-		// for (int i = 0; i < nodeList.size(); i++) {
-		// Node node = nodeList.elementAt(i);
-		//
-		// LinkTag tag = (LinkTag) node;
-		// String linkHref = tag.extractLink();
-		// try {
-		// URI linkUri = uri.resolve(linkHref);
-		// String link = linkUri.toString();
-
-//		for (FilterRule fr : crawler.getFilterRules()) {
-//			CrawlAction ca = fr.judge(link);
-//			if (ca != CrawlAction.AVOID) {
-//				pageInfo.getLinks().add(linkUri.toString());
-//			}
-//		}
-		// } catch (Exception e) {
-		// logger.error("extract error : {}", e);
-		// }
-		// }
 
 	}
 
