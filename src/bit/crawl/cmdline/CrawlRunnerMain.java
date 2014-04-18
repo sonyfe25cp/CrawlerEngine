@@ -50,8 +50,10 @@ public class CrawlRunnerMain {
 		
 		String taskFileName20 = "/home/coder/git/CrawlerEngine/real-world-tasks/newsgn-qq-new.spring.xml";
 		
+		String taskFileName21 = "/Users/omar/workspace/CrawlerEngine/new-tasks/EmbassyOfChinaInMala.spring.xml";
+		
 		ApplicationContext context = new FileSystemXmlApplicationContext(
-				"file:" + taskFileName20);
+				"file:" + taskFileName21);
 		Crawler crawler = context.getBean("crawler", Crawler.class);
 		crawler.run();
 	}
